@@ -58,7 +58,6 @@ jobs:
       - name: Build and push API image
         run: |
           gcloud builds submit \
-            --tag "${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" \
             --config deploy/cloudbuild-api.yaml \
             --substitutions "_IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" .
       - name: Run database migrations
