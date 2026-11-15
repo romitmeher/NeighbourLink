@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r backend/requirements.txt
-      - run: DATABASE_URL=sqlite:// pytest backend/tests -q
+      - run: PYTHONPATH=. DATABASE_URL=sqlite:// pytest backend/tests -q
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
