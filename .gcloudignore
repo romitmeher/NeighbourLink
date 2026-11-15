@@ -1,0 +1,15 @@
+.env
+.env.*
+.demo-credentials.txt
+ca.pem
+var/
+node_modules/
+frontend/node_modules/
+frontend/dist/
+desktop/node_modules/
+desktop/dist/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.github/

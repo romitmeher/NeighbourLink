@@ -6,3 +6,4 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY backend/ backend/
 RUN useradd --create-home --uid 10001 nl && mkdir -p /app/var/uploads && chown nl:nl /app/var/uploads
 USER nl
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

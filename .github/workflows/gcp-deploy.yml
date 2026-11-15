@@ -1,0 +1,113 @@
+name: Deploy NeighbourLink to GCP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: ${{ vars.GCP_REGION }}
+  REPOSITORY: ${{ vars.GCP_ARTIFACT_REPOSITORY }}
+  API_SERVICE: neighbourlink-api
+  WEB_SERVICE: neighbourlink-web
+  MIGRATION_JOB: neighbourlink-migrate
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+      - run: DATABASE_URL=sqlite:// pytest backend/tests -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --prefix frontend
+      - run: npm run lint --prefix frontend
+      - run: npm run build --prefix frontend
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --prefix frontend
+      - run: npm run build --prefix frontend
+      - run: gcloud auth configure-docker "${{ env.REGION }}-docker.pkg.dev" --quiet
+      - name: Build and push API image
+        run: |
+          gcloud builds submit \
+            --tag "${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" \
+            --config deploy/cloudbuild-api.yaml \
+            --substitutions "_IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" .
+      - name: Run database migrations
+        run: |
+          gcloud run jobs deploy "${{ env.MIGRATION_JOB }}" \
+            --image "${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" \
+            --region "${{ env.REGION }}" \
+            --command alembic \
+            --args "-c,backend/alembic.ini,upgrade,head" \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest,SESSION_SECRET=SESSION_SECRET:latest" \
+            --set-env-vars "APP_ENV=development"
+          gcloud run jobs execute "${{ env.MIGRATION_JOB }}" \
+            --region "${{ env.REGION }}" \
+            --wait
+      - name: Deploy API
+        run: |
+          gcloud run deploy "${{ env.API_SERVICE }}" \
+            --image "${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" \
+            --region "${{ env.REGION }}" \
+            --port 8000 \
+            --allow-unauthenticated \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest,SESSION_SECRET=SESSION_SECRET:latest" \
+            --set-env-vars "APP_ENV=development,COOKIE_SECURE=true,COMMISSION_BPS=1000,UPLOAD_DIR=/tmp/uploads,ALLOWED_ORIGINS=http://localhost"
+          API_URL="$(gcloud run services describe "${{ env.API_SERVICE }}" --region "${{ env.REGION }}" --format='value(status.url)')"
+          echo "API_URL=${API_URL}" >> "$GITHUB_ENV"
+      - name: Build and push web image
+        run: |
+          WEB_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/web:${{ github.sha }}"
+          docker build \
+            --build-arg "API_UPSTREAM=${API_URL}" \
+            --file deploy/web-cloudrun.Dockerfile \
+            --tag "${WEB_IMAGE}" .
+          docker push "${WEB_IMAGE}"
+      - name: Deploy web
+        run: |
+          gcloud run deploy "${{ env.WEB_SERVICE }}" \
+            --image "${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/web:${{ github.sha }}" \
+            --region "${{ env.REGION }}" \
+            --port 8080 \
+            --allow-unauthenticated
+          WEB_URL="$(gcloud run services describe "${{ env.WEB_SERVICE }}" --region "${{ env.REGION }}" --format='value(status.url)')"
+          echo "WEB_URL=${WEB_URL}" >> "$GITHUB_ENV"
+      - name: Allow web origin in API
+        run: |
+          gcloud run deploy "${{ env.API_SERVICE }}" \
+            --image "${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}" \
+            --region "${{ env.REGION }}" \
+            --port 8000 \
+            --allow-unauthenticated \
+            --set-secrets "DATABASE_URL=DATABASE_URL:latest,SESSION_SECRET=SESSION_SECRET:latest" \
+            --set-env-vars "APP_ENV=development,COOKIE_SECURE=true,COMMISSION_BPS=1000,UPLOAD_DIR=/tmp/uploads,ALLOWED_ORIGINS=${WEB_URL}"
+          echo "Deployed web: ${WEB_URL}"

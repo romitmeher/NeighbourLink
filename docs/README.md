@@ -9,6 +9,7 @@ Reviewed against local source on 15 November 2026 (India time).
 5. [Payments](payments.md): intended demo checkout and local refunds.
 6. [Test evidence](test-results.md) and [acceptance checklist](acceptance-checklist.md).
 7. [Demonstration](demo-script.md): manual presentation guide.
+8. [GCP deployment](gcp-deployment.md): Cloud Run and GitHub Actions setup.
 
 ## Evidence conventions
 

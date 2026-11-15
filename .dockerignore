@@ -3,6 +3,8 @@
 **/__pycache__
 **/.pytest_cache
 **/dist
+!frontend/dist/
+!frontend/dist/**
 **/*.sqlite*
 .env
 .demo-credentials.txt

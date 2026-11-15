@@ -32,6 +32,7 @@ Start with the [documentation index](docs/README.md).
 - [Test evidence](docs/test-results.md)
 - [Acceptance checklist](docs/acceptance-checklist.md)
 - [Demo walkthrough](docs/demo-script.md)
+- [GCP deployment and CI/CD](docs/gcp-deployment.md)
 
 ## Windows installer
 

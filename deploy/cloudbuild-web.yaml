@@ -1,0 +1,13 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - deploy/web-cloudrun.Dockerfile
+      - --build-arg
+      - API_UPSTREAM=${_API_UPSTREAM}
+      - --tag
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
