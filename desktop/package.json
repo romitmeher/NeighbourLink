@@ -1,0 +1,25 @@
+{
+  "name": "neighbourlink-desktop",
+  "version": "1.0.0",
+  "description": "Desktop client for the shared NeighbourLink marketplace",
+  "author": "NeighbourLink project",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test policy.test.cjs",
+    "package:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^43.7.0",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "in.neighbourlink.desktop",
+    "productName": "NeighbourLink",
+    "asar": true,
+    "files": ["main.cjs", "policy.cjs", "preload.cjs", "config.json", "package.json"],
+    "win": { "target": "nsis" },
+    "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true }
+  }
+}

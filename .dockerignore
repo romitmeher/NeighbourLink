@@ -1,0 +1,12 @@
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/dist
+**/*.sqlite*
+.env
+.demo-credentials.txt
+.git
+var
+desktop
+docs

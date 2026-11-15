@@ -1,0 +1,71 @@
+name: neighbourlink
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: deploy/api.Dockerfile
+  environment:
+    APP_ENV: ${APP_ENV:-development}
+    DATABASE_URL: postgresql+psycopg://neighbourlink:${POSTGRES_PASSWORD:?Generate .env}@db:5432/${POSTGRES_DB:-neighbourlink_dev}
+    SESSION_SECRET: ${SESSION_SECRET:?Generate .env}
+    ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://127.0.0.1:8080,http://localhost:8080}
+    COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    UPLOAD_DIR: /app/var/uploads
+    COMMISSION_BPS: ${COMMISSION_BPS:-1000}
+    RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+    RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+    RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+  volumes:
+    - uploads:/app/var/uploads
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-neighbourlink_dev}
+      POSTGRES_USER: neighbourlink
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Generate .env}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neighbourlink -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  migrate:
+    <<: *backend
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["alembic", "-c", "backend/alembic.ini", "upgrade", "head"]
+  api:
+    <<: *backend
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  worker:
+    <<: *backend
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["python", "-m", "backend.community_worker"]
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:80"
+volumes:
+  database:
+  uploads:
