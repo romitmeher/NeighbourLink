@@ -44,7 +44,7 @@ Never copy secrets into frontend code, documentation, or submission archives.
 
 ## Aiven and migrations
 
-Current local settings use Aiven, sslmode=verify-full, and the absolute local path to ca.pem. Update that certificate path when moving machines.
+Current local settings use Aiven, sslmode=verify-full, and a local CA certificate path. Keep the certificate outside Git and update that path when moving machines.
 
 Ordinary Alembic/Python startup does not automatically load .env. Apply migrations through the existing loader:
 
