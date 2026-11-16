@@ -3,6 +3,7 @@ import { api, money, timeIST } from './api'
 import { RequestMessages } from './Community'
 import Reputation from './Reputation'
 import { Icons } from './Icons'
+import { providerPortrait } from './providerPortrait'
 
 type Item = Record<string, any>
 type User = { id: number }
@@ -980,7 +981,7 @@ export default function Services({ user, openBooking }: HelpProps) {
         <div className="page-header-title">
           <h1>Local help <span className="rental-count">{!loading && !error ? results.length : providers.length} near you</span></h1>
           <p>Trusted neighbours who can lend a hand.</p>
-          <small className="help-demo-note">Sample reviews for demo</small>
+          <small className="help-demo-note">Illustrative portraits and sample reviews for demo</small>
         </div>
         <div className="segmented-tabs help-tabs" role="group" aria-label="Local Help views">
           {['Providers', 'Task board', 'Post a task', 'My provider profile'].map((view) => (
@@ -1036,7 +1037,12 @@ export default function Services({ user, openBooking }: HelpProps) {
               <article className="help-provider" key={provider.user_id}>
                 <div className="help-provider-side" style={{ backgroundColor: ['#e3dbff', '#ffeeb0', '#ffd8c6', '#cde6ff'][index % 4] }}>
                   <div className="help-provider-chips"><span>Local provider</span><span>Service profile</span></div>
-                  <div className="help-provider-initial" aria-hidden="true">{provider.name?.[0]?.toUpperCase() || 'P'}</div>
+                  {providerPortrait(provider.name) ? (
+                    <img className="help-provider-portrait" src={providerPortrait(provider.name)!}
+                      alt={`Illustrative portrait of ${provider.name}`} loading="lazy" />
+                  ) : (
+                    <div className="help-provider-initial" aria-hidden="true">{provider.name?.[0]?.toUpperCase() || 'P'}</div>
+                  )}
                   <div className="help-provider-stats">
                     <div><strong>{provider.categories.length}</strong><span>{provider.categories.length === 1 ? 'service category' : 'service categories'}</span></div>
                     <div><strong>{provider.availability?.split(' ')[0] || 'Ask'}</strong><span>availability</span></div>
@@ -1079,23 +1085,14 @@ export default function Services({ user, openBooking }: HelpProps) {
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary-light)',
-                    color: 'var(--primary)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontFamily: 'var(--font-heading)',
-                    fontWeight: 800,
-                    fontSize: '1.6rem',
-                    border: '2px solid var(--border)'
-                  }}
-                >
-                  {selectedProvider.name?.[0]?.toUpperCase() || 'P'}
-                </div>
+                {providerPortrait(selectedProvider.name) ? (
+                  <img className="help-modal-portrait" src={providerPortrait(selectedProvider.name)!}
+                    alt={`Illustrative portrait of ${selectedProvider.name}`} />
+                ) : (
+                  <div className="help-modal-portrait help-modal-initial" aria-hidden="true">
+                    {selectedProvider.name?.[0]?.toUpperCase() || 'P'}
+                  </div>
+                )}
                 <div>
                   <h2 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>{selectedProvider.name}</h2>
                   <small style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>

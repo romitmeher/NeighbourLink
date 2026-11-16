@@ -1289,6 +1289,8 @@ button.btn-sm { border-radius: 999px; }
 .help-provider-chips span { display: inline-flex; padding: 6px 11px; border-radius: 999px; background: rgba(255,255,255,.8); font-size: .74rem; font-weight: 700; }
 .help-provider-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .help-provider-portrait { width: min(230px, 78%); aspect-ratio: 1; align-self: center; object-fit: cover; border: 7px solid rgba(255,255,255,.75); border-radius: 50%; }
+.help-modal-portrait { width: 64px; height: 64px; flex: none; border: 2px solid var(--border); border-radius: 50%; object-fit: cover; }
+.help-modal-initial { display: grid; place-items: center; background: var(--primary-light); color: var(--primary); font: 800 1.6rem var(--font-heading); }
 .help-provider-initial { flex: 1; display: grid; place-items: center; font: 800 clamp(7rem, 15vw, 12rem)/1 var(--font-heading); }
 .help-provider-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .help-provider-stats > div { padding: 13px 14px; border-radius: 20px; background: rgba(255,255,255,.75); }
@@ -1391,6 +1393,7 @@ button.landing-text-link:hover { background: transparent; color: var(--primary);
 .landing-person { display: flex; align-items: center; justify-content: flex-start; gap: 14px; width: 100%; min-height: 90px; padding: 12px 16px; background: #fff; color: #17141f; border-radius: 22px; text-align: left; }
 .landing-person:hover { background: #f4efff; color: #17141f; }
 .landing-person-avatar { display: grid; place-items: center; flex: none; width: 56px; height: 56px; border-radius: 18px; font: 800 2rem var(--font-heading); }
+.landing-person img.landing-person-avatar { object-fit: cover; }
 .landing-person > span:nth-child(2) { display: grid; gap: 3px; min-width: 0; }
 .landing-person strong { font: 800 1rem var(--font-heading); }
 .landing-person small { color: #6b6878; font: 500 .78rem var(--font-body); white-space: normal; }
