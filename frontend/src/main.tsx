@@ -6,6 +6,7 @@ import Services, { ServiceActions } from './Services'
 import Payments from './Payments'
 import Community from './Community'
 import Home from './Home'
+import Landing from './Landing'
 import { Icons } from './Icons'
 import { rentalPhoto } from './rentalPhoto'
 import CommunityFaces from './CommunityFaces'
@@ -972,7 +973,7 @@ function App() {
           </nav>
           <div className="nav-actions"><button type="button" className="btn-secondary" onClick={signIn}>Sign in</button><button type="button" onClick={join}>Join NeighbourLink</button></div>
         </div></header>
-        <main className="main-workspace"><Home user={{ id: 0, name: '', area: 'Mumbai' }} go={join} openBooking={signIn} /></main>
+        <main className="main-workspace"><Landing user={{ id: 0, name: '', area: 'Mumbai' }} go={join} openBooking={signIn} /></main>
       </div>
     )
   }
