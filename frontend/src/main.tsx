@@ -25,8 +25,8 @@ function Brand({ onClick }: { onClick?: () => void }) {
   ) : <div className="brand-link">{mark}</div>
 }
 
-function Auth({ onUser }: { onUser: (u: any) => void }) {
-  const [join, setJoin] = useState(false)
+function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => void; onBack: () => void; initialJoin?: boolean }) {
+  const [join, setJoin] = useState(initialJoin)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [otpPhone, setOtpPhone] = useState('')
@@ -113,6 +113,7 @@ function Auth({ onUser }: { onUser: (u: any) => void }) {
 
       <section className="auth-form-pane">
         <div className="auth-card-box">
+          <button type="button" className="auth-back-link" onClick={onBack}>← Back to home</button>
           <div
             className="segmented-tabs"
             style={{ width: '100%', marginBottom: '1.75rem', justifyContent: 'center' }}
@@ -902,6 +903,7 @@ function LocalPreview({ retry }: { retry: () => void }) {
 function App() {
   const [user, setUser] = useState<any>()
   const [error, setError] = useState('')
+  const [showAuth, setShowAuth] = useState<'sign-in' | 'join' | null>(null)
   const [route, setRoute] = useState(decodeURIComponent(location.hash.slice(1)) || 'Home')
 
   const load = () => {
@@ -951,13 +953,27 @@ function App() {
   }
 
   if (user === null) {
+    if (showAuth) return (
+      <Auth key={showAuth} initialJoin={showAuth === 'join'} onBack={() => setShowAuth(null)} onUser={(account) => {
+        setUser(account)
+        setShowAuth(null)
+        go('Home')
+      }} />
+    )
+    const signIn = () => setShowAuth('sign-in')
+    const join = () => setShowAuth('join')
     return (
-      <Auth
-        onUser={(u) => {
-          setUser(u)
-          go('Home')
-        }}
-      />
+      <div className="public-landing-shell">
+        <header className="top-nav"><div className="top-nav-inner">
+          <Brand onClick={() => go('Home')} />
+          <nav className="nav-menu" aria-label="Main navigation">
+            <button className="nav-item" onClick={join}>Rentals</button>
+            <button className="nav-item" onClick={join}>Local Help</button>
+          </nav>
+          <div className="nav-actions"><button type="button" className="btn-secondary" onClick={signIn}>Sign in</button><button type="button" onClick={join}>Join NeighbourLink</button></div>
+        </div></header>
+        <main className="main-workspace"><Home user={{ id: 0, name: '', area: 'Mumbai' }} go={join} openBooking={signIn} /></main>
+      </div>
     )
   }
 
