@@ -269,7 +269,7 @@ function DateForm({
         {owner ? 'Block unavailable dates' : 'Select rental dates'}
       </h4>
       <form onSubmit={submit} style={{ display: 'grid', gap: '0.85rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="rental-date-grid">
           <label>
             <span>Start date</span>
             <input

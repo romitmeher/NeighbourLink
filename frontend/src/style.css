@@ -894,6 +894,17 @@ article.card {
   line-height: 1.6;
 }
 
+
+
+/* Agreement Preview - Dark Mode */
+:root[data-theme='dark'] .agreement-container {
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border-color: var(--border);
+}
+
+
+
 .agreement-header {
   border-bottom: 1.5px solid var(--border);
   padding-bottom: 1rem;
@@ -1411,3 +1422,25 @@ button.landing-text-link:hover { background: transparent; color: var(--primary);
 @media(max-width: 600px) { .public-landing-shell .top-nav-inner { gap: 8px; } .public-landing-shell .brand-link { font-size: 1.17rem; gap: 5px; } .public-landing-shell .brand-link svg { width: 28px; height: 28px; } .public-landing-shell .nav-actions .btn-secondary { display: none; } .public-landing-shell .nav-actions > button { padding: 10px 13px; font-size: .78rem; } .landing-page { gap: 62px; } .landing-hero h1 { font-size: clamp(3.05rem, 11vw, 4.4rem); max-width: 100%; } .landing-mobile-break { display: block; } .landing-hero-actions { width: 100%; } .landing-hero-actions button { min-height: 52px; padding-inline: 19px; font-size: .92rem; } .landing-hero-art, .landing-hero-art > img { min-height: 360px; } .landing-photo-note { right: 12px; bottom: 12px; font-size: .68rem; } .landing-section-intro { align-items: start; flex-direction: column; } .landing-listing-grid { grid-template-columns: 1fr; } .landing-help { padding: 32px 24px; border-radius: 28px; } .landing-person { flex-wrap: wrap; } .landing-person-rate { margin-left: 0; } .landing-footer { flex-wrap: wrap; } .landing-footer p { order: 3; width: 100%; margin-left: 0; } }
 @media(max-width: 600px) { .app-shell .top-nav-inner { gap: 8px; } .app-shell .brand-link { gap: 5px; font-size: 1.17rem; } .app-shell .brand-link svg { width: 28px; height: 28px; } .app-shell .nav-actions { gap: 6px; } .app-shell .location-pill, .app-shell .user-profile-menu > span { display: none; } .app-shell .theme-toggle { width: 36px; min-height: 36px; } .app-shell .user-profile-menu { padding: 4px; } .app-shell .nav-actions > .btn-subtle { padding: 8px; } .home-hero-card .hero-search-box > div:first-child { flex-wrap: wrap; } .home-hero-card .hero-search-box input { min-width: 0; width: 100%; } }
 @media(prefers-reduced-motion:reduce) { .landing-category img, .landing-listing-photo img { transition: none; } }
+
+.rental-date-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.rental-date-grid label {
+  min-width: 0;
+}
+
+.rental-date-grid input[type="date"] {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .rental-date-grid {
+    grid-template-columns: 1fr;
+  }
+}

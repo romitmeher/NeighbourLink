@@ -461,10 +461,13 @@ export default function Home({ user, go, openBooking }: HomeProps) {
                 <div className="listing-media">
                   {item.photos?.length > 0 ? (
                     <img
-                      src={`/api/uploads/${item.photos[0]}`}
-                      alt={item.title}
-                      loading="lazy"
-                    />
+                     src={`/api/uploads/${item.photos[0]}`}
+                     alt={item.title}
+                     loading="lazy"
+                     onError={(e) => {
+                       e.currentTarget.src = rentalPhoto(item.title, item.category)
+                     }}
+                   />
                   ) : (
                     <img src={rentalPhoto(item.title, item.category)} alt={item.title} loading="lazy" />
                   )}
