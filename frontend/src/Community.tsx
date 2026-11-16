@@ -198,7 +198,7 @@ function Cases({
         <article
           key={r.id}
           style={{
-            backgroundColor: '#FAFCFA',
+            backgroundColor: 'var(--bg-main)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
             padding: '1.2rem'
@@ -237,7 +237,7 @@ function Cases({
               style={{
                 marginTop: '1rem',
                 paddingTop: '0.75rem',
-                borderTop: '1px solid #EEF3EF',
+                borderTop: '1px solid var(--border)',
                 display: 'grid',
                 gap: '0.5rem'
               }}
@@ -255,7 +255,7 @@ function Cases({
           )}
 
           {(user.is_admin || (user.id !== r.author_id && r.status !== 'resolved')) && (
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #EEF3EF' }}>
+            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
               <Form
                 label="Add case update"
                 submit={async (f) => {
@@ -411,7 +411,7 @@ function BookingCommunity({ user, bookingId }: { user: User; bookingId: number }
             key={r.id}
             style={{
               padding: '0.85rem 1.15rem',
-              backgroundColor: '#FAFCFA',
+              backgroundColor: 'var(--bg-main)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-md)',
               marginBottom: '0.65rem'
@@ -540,7 +540,7 @@ function Admin({ user, openBooking }: Props) {
                 key={a.id}
                 style={{
                   padding: '0.85rem 1.15rem',
-                  backgroundColor: '#FAFCFA',
+                  backgroundColor: 'var(--bg-main)',
                   border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-md)',
                   display: 'flex',
@@ -595,7 +595,7 @@ function Admin({ user, openBooking }: Props) {
                 key={l.id}
                 style={{
                   padding: '0.85rem 1.15rem',
-                  backgroundColor: '#FAFCFA',
+                  backgroundColor: 'var(--bg-main)',
                   border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-md)',
                   display: 'flex',

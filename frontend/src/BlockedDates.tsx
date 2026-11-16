@@ -36,7 +36,7 @@ export default function BlockedDates({ listingId }: { listingId: number }) {
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '0.45rem 0.75rem',
-              backgroundColor: '#FAFCFA',
+              backgroundColor: 'var(--bg-main)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)',
               fontSize: '0.85rem'

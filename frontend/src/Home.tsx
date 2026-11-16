@@ -3,6 +3,7 @@ import { api, money, timeIST } from './api'
 import { Icons } from './Icons'
 import { TorphText } from './TorphText'
 import Reputation from './Reputation'
+import { rentalPhoto } from './rentalPhoto'
 
 interface HomeProps {
   user: any
@@ -90,8 +91,8 @@ export default function Home({ user, go, openBooking }: HomeProps) {
       <section
         className="home-hero-card"
         style={{
-          background: 'linear-gradient(135deg, #EBF5F0 0%, #D8EDE4 100%)',
-          border: '1px solid #BFDDD0',
+          background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--primary-light) 100%)',
+          border: '1px solid var(--border)',
           borderRadius: 'var(--radius-xl)',
           padding: 'clamp(2rem, 5vw, 4rem)',
           position: 'relative',
@@ -106,7 +107,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
               alignItems: 'center',
               gap: '0.45rem',
               backgroundColor: '#FFFFFF',
-              border: '1px solid #BFDDD0',
+              border: '1px solid var(--border)',
               borderRadius: 'var(--radius-full)',
               padding: '0.3rem 0.85rem',
               fontSize: '0.8rem',
@@ -121,7 +122,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
             <span>{user.area || 'Your neighbourhood'}</span>
           </div>
 
-          <h1 style={{ marginBottom: '1rem', color: '#133E34', lineHeight: 1.12 }}>
+          <h1 style={{ marginBottom: '1rem', color: 'var(--text-main)', lineHeight: 1.12 }}>
             Borrow what you need.{' '}
             <span style={{ color: 'var(--primary)', fontStyle: 'italic', fontWeight: 700 }}>
               Find help nearby.
@@ -131,7 +132,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
           <p
             style={{
               fontSize: 'clamp(1.05rem, 1.8vw, 1.25rem)',
-              color: '#365D52',
+              color: 'var(--text-muted)',
               marginBottom: '2rem',
               maxWidth: '540px'
             }}
@@ -144,7 +145,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
             className="hero-search-box"
             style={{
               backgroundColor: '#FFFFFF',
-              border: '1.5px solid #BED8CC',
+              border: '1.5px solid var(--border)',
               borderRadius: 'var(--radius-xl)',
               padding: '0.6rem 0.8rem',
               boxShadow: 'var(--shadow-md)',
@@ -156,10 +157,10 @@ export default function Home({ user, go, openBooking }: HomeProps) {
               <div
                 style={{
                   display: 'inline-flex',
-                  backgroundColor: '#EFF5F2',
+                  backgroundColor: 'var(--bg-main)',
                   borderRadius: 'var(--radius-full)',
                   padding: '0.2rem',
-                  border: '1px solid #D6E4DC'
+                  border: '1px solid var(--border)'
                 }}
               >
                 <button
@@ -465,9 +466,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
                       loading="lazy"
                     />
                   ) : (
-                    <div className="listing-placeholder">
-                      <Icons.Package size={44} />
-                    </div>
+                    <img src={rentalPhoto(item.title, item.category)} alt={item.title} loading="lazy" />
                   )}
                   <div className="listing-price-badge">
                     {money(item.daily_price)} / day
@@ -695,7 +694,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
       {/* Owner / Helper CTA Banner */}
       <section
         style={{
-          background: 'linear-gradient(135deg, #157A68 0%, #106453 100%)',
+          background: 'linear-gradient(135deg, var(--primary) 0%, #4127ce 100%)',
           color: '#FFFFFF',
           borderRadius: 'var(--radius-xl)',
           padding: 'clamp(2rem, 4vw, 3rem)',
@@ -711,7 +710,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
           <h2 style={{ color: '#FFFFFF', marginBottom: '0.5rem' }}>
             Have tools gathering dust or skills to share?
           </h2>
-          <p style={{ color: '#DCEFE8', fontSize: '1.05rem' }}>
+          <p style={{ color: '#e3dbff', fontSize: '1.05rem' }}>
             List your items for daily rental or register as a local provider. Earn locally with simple 10%
             platform commission.
           </p>

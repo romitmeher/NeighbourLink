@@ -583,7 +583,7 @@ function Request({
           gap: '1rem',
           fontSize: '0.85rem',
           color: 'var(--text-muted)',
-          backgroundColor: '#FAFCFA',
+          backgroundColor: 'var(--bg-main)',
           padding: '0.65rem 0.95rem',
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border)'
@@ -654,7 +654,7 @@ function Request({
             <div
               key={o.id}
               style={{
-                backgroundColor: '#FAFCFA',
+                backgroundColor: 'var(--bg-main)',
                 border: '1.5px solid var(--border)',
                 borderRadius: 'var(--radius-md)',
                 padding: '1.1rem',
@@ -927,6 +927,8 @@ export default function Services({ user, openBooking }: HelpProps) {
   const [selectedProvider, setSelectedProvider] = useState<Item | null>(null)
   const [area, setArea] = useState('')
   const [category, setCategory] = useState('')
+  const [providerSearch, setProviderSearch] = useState('')
+  const [providerSort, setProviderSort] = useState('default')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -954,36 +956,39 @@ export default function Services({ user, openBooking }: HelpProps) {
   }, [user.id])
 
   const profile = providers.find((p) => p.user_id === user.id)
-  const results = providers.filter(
-    (p) =>
-      p.area.toLowerCase().includes(area.toLowerCase()) &&
-      (!category || p.categories.includes(category))
-  )
+  const results = providers.filter((provider) => {
+    const query = providerSearch.trim().toLowerCase()
+    return provider.area.toLowerCase().includes(area.toLowerCase()) &&
+      (!category || provider.categories.includes(category)) &&
+      (!query || [provider.name, provider.area, ...provider.categories].some((value: string) =>
+        value.toLowerCase().includes(query)))
+  })
+  if (providerSort === 'price') results.sort((a, b) => a.rate - b.rate)
+  if (providerSort === 'name') results.sort((a, b) => a.name.localeCompare(b.name))
+
+  const sampleReviews: Record<string, string[]> = {
+    'Mira Joshi': ['Packed our whole flat in one afternoon. Everything was labelled and nothing broke.', 'Calm, quick and very tidy. Would book again for our next move.'],
+    'Dev Mehta': ['Fixed our printer and wired the whole desk in under an hour.', 'Knows his stuff. Arrived a little late but explained everything.'],
+    'Kavya Iyer': ['My wardrobe has never looked like this. She even made a small chart.', 'Patient and very organised. Worth every rupee.'],
+    'Arjun Das': ['Kitchen and bathrooms sparkling. Fixed price as promised.', 'Good job overall, a couple of spots needed a second pass.'],
+    'Neha Patel': ['Built a bed and a wardrobe in two hours. Rock solid.', 'Brought her own tools and cleaned up after. Brilliant.']
+  }
 
   return (
     <div>
-      <div className="page-header">
+      <div className="page-header help-heading">
         <div className="page-header-title">
-          <small>COMMUNITY TALENT</small>
-          <h2>Local Help services</h2>
+          <h1>Local help <span className="rental-count">{!loading && !error ? results.length : providers.length} near you</span></h1>
+          <p>Trusted neighbours who can lend a hand.</p>
+          <small className="help-demo-note">Sample reviews for demo</small>
         </div>
-
-        <div className="page-header-actions">
-          <div className="segmented-tabs">
-            {['Providers', 'Task board', 'Post a task', 'My provider profile'].map((t) => (
-              <button
-                key={t}
-                className={`segmented-tab ${tab === t ? 'active' : ''}`}
-                onClick={() => {
-                  setTarget(null)
-                  setTab(t)
-                }}
-                aria-pressed={tab === t}
-              >
-                <span>{t}</span>
-              </button>
-            ))}
-          </div>
+        <div className="segmented-tabs help-tabs" role="group" aria-label="Local Help views">
+          {['Providers', 'Task board', 'Post a task', 'My provider profile'].map((view) => (
+            <button key={view} className={`segmented-tab ${tab === view ? 'active' : ''}`}
+              onClick={() => { setTarget(null); setTab(view) }} aria-pressed={tab === view}>
+              {view}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -994,124 +999,73 @@ export default function Services({ user, openBooking }: HelpProps) {
         </p>
       )}
 
-      {/* View 1: Provider Directory */}
+      {/* Provider directory */}
       {!loading && !error && tab === 'Providers' && (
         <>
-          <div className="filter-toolbar">
-            <label>
-              <span>Filter by area</span>
-              <input
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
-                placeholder="e.g. Bandra, Dadar"
-              />
+          <div className="help-filters">
+            <label className="rental-search"><Icons.Search size={18} />
+              <input type="search" aria-label="Search providers" placeholder="Area, name or service" value={providerSearch}
+                onChange={(event) => setProviderSearch(event.target.value)} />
             </label>
-            <label>
-              <span>Category</span>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="">All categories</option>
-                {categories.map((c) => (
-                  <option key={c}>{c}</option>
-                ))}
+            <div className="rental-chips" role="group" aria-label="Service category">
+              {['', ...categories].map((name) => (
+                <button key={name} type="button" className="rental-chip" aria-pressed={category === name}
+                  onClick={() => setCategory(name)}>{name || 'All'}</button>
+              ))}
+            </div>
+            <div className="help-filter-tail">
+              <input aria-label="Filter by area" placeholder="Area" value={area} onChange={(event) => setArea(event.target.value)} />
+              <select aria-label="Sort providers" value={providerSort} onChange={(event) => setProviderSort(event.target.value)}>
+                <option value="default">Default order</option>
+                <option value="price">Lowest price</option>
+                <option value="name">Name A–Z</option>
               </select>
-            </label>
+            </div>
           </div>
 
           {!results.length && (
-            <div className="empty-state" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
+            <div className="empty-state help-empty">
               <h3>No providers match this search</h3>
-              <p style={{ color: 'var(--text-muted)' }}>Try selecting a broader area or category.</p>
+              <p>Try another area or clear the filters.</p>
+              <button type="button" onClick={() => { setProviderSearch(''); setArea(''); setCategory('') }}>Clear filters</button>
             </div>
           )}
 
-          <div className="listing-grid">
-            {results.map((p) => (
-              <article className="card" key={p.user_id} style={{ display: 'grid', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                  <div
-                    style={{
-                      width: '52px',
-                      height: '52px',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--primary-light)',
-                      color: 'var(--primary)',
-                      display: 'grid',
-                      placeItems: 'center',
-                      fontFamily: 'var(--font-heading)',
-                      fontWeight: 800,
-                      fontSize: '1.2rem',
-                      border: '2px solid var(--border)'
-                    }}
-                  >
-                    {p.name?.[0]?.toUpperCase() || 'P'}
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.2rem', marginBottom: '0.15rem' }}>{p.name}</h3>
-                    <small style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <Icons.MapPin size={12} />
-                      {p.area}
-                    </small>
+          <div className="help-provider-list">
+            {results.map((provider, index) => (
+              <article className="help-provider" key={provider.user_id}>
+                <div className="help-provider-side" style={{ backgroundColor: ['#e3dbff', '#ffeeb0', '#ffd8c6', '#cde6ff'][index % 4] }}>
+                  <div className="help-provider-chips"><span>Local provider</span><span>Service profile</span></div>
+                  <div className="help-provider-initial" aria-hidden="true">{provider.name?.[0]?.toUpperCase() || 'P'}</div>
+                  <div className="help-provider-stats">
+                    <div><strong>{provider.categories.length}</strong><span>{provider.categories.length === 1 ? 'service category' : 'service categories'}</span></div>
+                    <div><strong>{provider.availability?.split(' ')[0] || 'Ask'}</strong><span>availability</span></div>
                   </div>
                 </div>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                  {p.offerings?.map((o: string) => (
-                    <span key={o} className="badge badge-primary">
-                      {o}
-                    </span>
-                  ))}
-                  {p.categories?.slice(0, 2).map((c: string) => (
-                    <span key={c} className="badge badge-neutral">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.5 }}>
-                  {p.bio}
-                </p>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.5rem 0',
-                    borderTop: '1px solid #EEF3EF'
-                  }}
-                >
-                  <div>
-                    <strong style={{ fontSize: '1.15rem', color: 'var(--primary)' }}>
-                      {money(p.rate)}
-                    </strong>
-                    <small style={{ marginLeft: '0.3rem', color: 'var(--text-muted)' }}>
-                      / {p.basis}
-                    </small>
+                <div className="help-provider-main">
+                  <div className="help-provider-head"><h2>{provider.name}</h2></div>
+                  <div className="help-provider-tags">
+                    {provider.categories.map((name: string) => <span key={name}>{name}</span>)}
                   </div>
-                  <Reputation userId={p.user_id} kind="service" />
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.65rem', marginTop: '0.35rem' }}>
-                  <button
-                    className="btn-secondary btn-sm"
-                    onClick={() => setSelectedProvider(p)}
-                    style={{ flex: 1 }}
-                  >
-                    View profile
-                  </button>
-
-                  {p.user_id !== user.id && (
-                    <button
-                      className="btn-sm"
-                      onClick={() => {
-                        setTarget(p)
-                        setTab('Post a task')
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      <span>Request quote</span>
-                    </button>
-                  )}
+                  <Reputation userId={provider.user_id} kind="service" />
+                  <div className="help-provider-meta"><span><Icons.MapPin size={16} />{provider.area}, Mumbai</span><span><Icons.Calendar size={16} />{provider.availability}</span></div>
+                  <p className="help-provider-bio">{provider.bio}</p>
+                  {sampleReviews[provider.name] ? (
+                    <div className="help-review-list" aria-label="Sample reviews for design preview">
+                      {sampleReviews[provider.name].map((review) => (
+                        <div className="help-review" key={review}><span className="help-review-stars" aria-hidden="true">★★★★★</span><p>{review}</p><small>Sample review</small></div>
+                      ))}
+                    </div>
+                  ) : <div className="help-no-review">No sample reviews yet</div>}
+                  <div className="help-provider-bottom">
+                    <div className="help-provider-price">{money(provider.rate)} <small>/ {provider.basis}</small></div>
+                    <div className="help-provider-actions">
+                      <button type="button" className="btn-secondary" onClick={() => setSelectedProvider(provider)}>View profile</button>
+                      {provider.user_id !== user.id && (
+                        <button type="button" onClick={() => { setTarget(provider); setTab('Post a task') }}>Request quote</button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </article>
             ))}

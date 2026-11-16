@@ -7,28 +7,22 @@ import Payments from './Payments'
 import Community from './Community'
 import Home from './Home'
 import { Icons } from './Icons'
+import { rentalPhoto } from './rentalPhoto'
+import CommunityFaces from './CommunityFaces'
 import './style.css'
 
 function Brand({ onClick }: { onClick?: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="brand-link"
-      style={{
-        background: 'transparent',
-        border: 'none',
-        boxShadow: 'none',
-        padding: 0,
-        cursor: 'pointer'
-      }}
-    >
-      <div className="brand-mark">
-        <Icons.Home size={18} />
-      </div>
-      <span>NeighbourLink</span>
-      <span className="brand-pill">Marketplace</span>
-    </button>
-  )
+  const mark = <>
+    <svg viewBox="0 0 34 34" width="34" height="34" aria-hidden="true">
+      <circle cx="22" cy="14" r="10" fill="#ffd23f" />
+      <rect x="2" y="9" width="19" height="21" rx="7" fill="var(--primary)" />
+      <circle cx="11.5" cy="19.5" r="3" fill="#fff" />
+    </svg>
+    <span>neighbour<span className="brand-accent">link</span></span>
+  </>
+  return onClick ? (
+    <button type="button" className="brand-link" onClick={onClick}>{mark}</button>
+  ) : <div className="brand-link">{mark}</div>
 }
 
 function Auth({ onUser }: { onUser: (u: any) => void }) {
@@ -88,7 +82,7 @@ function Auth({ onUser }: { onUser: (u: any) => void }) {
                 fontSize: '0.8rem',
                 fontWeight: 750,
                 letterSpacing: '0.12em',
-                color: '#D7EC9C',
+                color: '#ffd23f',
                 textTransform: 'uppercase'
               }}
             >
@@ -103,16 +97,16 @@ function Auth({ onUser }: { onUser: (u: any) => void }) {
               }}
             >
               Borrow nearby. <br />
-              <em style={{ color: '#D7EC9C', fontStyle: 'normal' }}>Find local help.</em>
+              <em style={{ color: '#ffd23f', fontStyle: 'normal' }}>Find local help.</em>
             </h1>
-            <p style={{ color: '#DCEFE8', fontSize: '1.15rem', lineHeight: 1.6 }}>
+            <p style={{ color: '#e3dbff', fontSize: '1.15rem', lineHeight: 1.6 }}>
               Rent everyday items, hire trusted neighbours for tasks, and keep all agreements and
               handover notes in one place.
             </p>
           </div>
         </div>
 
-        <div style={{ fontSize: '0.82rem', color: '#B3D6C9' }}>
+        <div style={{ fontSize: '0.82rem', color: 'var(--border)' }}>
           <span>© 2026 NeighbourLink · India Standard Time · Secure demo payments</span>
         </div>
       </section>
@@ -249,7 +243,7 @@ function Terms({ value }: { value: any }) {
           key={k}
           style={{
             padding: '0.65rem 0',
-            borderBottom: '1px solid #EEF3EF'
+            borderBottom: '1px solid var(--border)'
           }}
         >
           <dt
@@ -838,6 +832,73 @@ function Profile({ user, onUser }: { user: any; onUser: (u: any) => void }) {
 
 const TABS = ['Home', 'Rentals', 'Local Help', 'Bookings', 'Dashboard', 'Profile'] as const
 
+function ThemeToggle() {
+  const [dark, setDark] = useState(() => localStorage.getItem('neighbourlink-theme') === 'dark')
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+    localStorage.setItem('neighbourlink-theme', dark ? 'dark' : 'light')
+  }, [dark])
+  return (
+    <button type="button" className="theme-toggle" aria-label="Dark theme" aria-pressed={dark} onClick={() => setDark(!dark)}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        {dark ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19m0-14-1.5 1.5m-11 11L5 19" /></> :
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />}
+      </svg>
+    </button>
+  )
+}
+
+const previewItems = [
+  { title: 'Folding picnic table', category: 'Household', area: 'Dadar', price: 160, art: 'household' },
+  { title: 'Handheld vacuum', category: 'Household', area: 'Dadar', price: 200, art: 'tools' },
+  { title: 'Camping chairs, pair', category: 'Camping', area: 'Dadar', price: 150, art: 'camping' },
+  { title: 'Portable speaker', category: 'Party & audio', area: 'Dadar', price: 250, art: 'party' }
+]
+
+function LocalPreview({ retry }: { retry: () => void }) {
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('All')
+  const [sort, setSort] = useState('default')
+  const shown = previewItems
+    .filter((item) => (category === 'All' || item.category === category) && item.title.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => sort === 'price' ? a.price - b.price : 0)
+
+  return (
+    <div className="local-preview">
+      <header className="top-nav"><div className="top-nav-inner">
+        <Brand />
+        <span className="location-pill"><Icons.MapPin size={16} />Dadar, Mumbai</span>
+        <span className="preview-label">Local design preview</span>
+      </div></header>
+      <main className="main-workspace rentals-page">
+        <div className="preview-notice" role="status">
+          <span>The local backend is unavailable. Browse the design with sample items.</span>
+          <button type="button" className="btn-secondary btn-sm" onClick={retry}>Retry connection</button>
+        </div>
+        <div className="page-header rentals-heading">
+          <div className="page-header-title"><h1>Rentals <span className="rental-count">{shown.length} near you</span></h1><p>Borrow equipment from people near you.</p></div>
+          <CommunityFaces />
+        </div>
+        <div className="segmented-tabs" role="group" aria-label="Rental views"><button className="segmented-tab active" type="button">Browse items</button></div>
+        <div className="rental-filters">
+          <label className="rental-search"><Icons.Search size={18} /><input type="search" aria-label="Search sample items" placeholder="Tent, projector, drill, ladder…" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+          <div className="rental-chips" role="group" aria-label="Category">
+            {['All', 'Household', 'Camping', 'Party & audio'].map((name) => <button key={name} type="button" className="rental-chip" aria-pressed={category === name} onClick={() => setCategory(name)}>{name}</button>)}
+          </div>
+          <div className="rental-filter-options"><select aria-label="Sort sample items" value={sort} onChange={(event) => setSort(event.target.value)}><option value="default">Default order</option><option value="price">Lowest price</option></select></div>
+        </div>
+        {shown.length ? <div className={`listing-grid rental-grid ${shown.length === 4 ? 'rental-bento' : ''}`}>
+          {shown.map((item, index) => <article className="listing-card" key={item.title}>
+            <div className="rental-card-top"><span className="badge badge-primary">{item.category}</span></div>
+            <div className="listing-media rental-media"><img className="rental-photo" src={rentalPhoto(item.title, item.category)} alt="" /></div>
+            <div className="listing-body"><h3 className="listing-title">{item.title}</h3><div className="listing-meta rental-meta"><small><Icons.MapPin size={14} />{item.area}</small><span className="listing-price-badge">₹{item.price} <small>/ day</small></span></div><div className="rental-neighbour"><img src={`/community-portraits/neighbour-${index + 1}.png`} alt="" /><span>Demo neighbour</span></div></div>
+          </article>)}
+        </div> : <div className="empty-state"><h3>Nothing here yet</h3><p>Try another search or category.</p></div>}
+      </main>
+    </div>
+  )
+}
+
 function App() {
   const [user, setUser] = useState<any>()
   const [error, setError] = useState('')
@@ -866,25 +927,8 @@ function App() {
   const openBooking = (n: number) => go('booking/' + n)
 
   if (!user && error) {
-    return (
-      <main
-        style={{
-          minHeight: '100vh',
-          display: 'grid',
-          placeItems: 'center',
-          padding: '2rem'
-        }}
-      >
-        <div className="panel" style={{ maxWidth: '440px', textAlign: 'center' }}>
-          <Brand />
-          <p role="alert" style={{ margin: '1.5rem 0' }}>
-            {error}
-          </p>
-          <button onClick={load} className="btn-lg" style={{ width: '100%' }}>
-            <span>Retry connection</span>
-          </button>
-        </div>
-      </main>
+    return import.meta.env.DEV ? <LocalPreview retry={load} /> : (
+      <main className="connection-error"><div className="panel"><Brand /><p role="alert">{error}</p><button onClick={load}>Retry connection</button></div></main>
     )
   }
 
@@ -951,7 +995,7 @@ function App() {
             </button>
             <button
               className="nav-item"
-              aria-current={route === 'Bookings' ? 'page' : undefined}
+              aria-current={route === 'Bookings' || route.startsWith('booking/') ? 'page' : undefined}
               onClick={() => go('Bookings')}
             >
               <Icons.Calendar size={16} />
@@ -968,6 +1012,8 @@ function App() {
           </nav>
 
           <div className="nav-actions">
+            <span className="location-pill"><Icons.MapPin size={16} />{user.area || 'Your neighbourhood'}</span>
+            <ThemeToggle />
             <button
               className="user-profile-menu"
               onClick={() => go('Profile')}
@@ -1010,13 +1056,6 @@ function App() {
 
       {/* Main Workspace View */}
       <main className="main-workspace">
-        <div className="app-context-banner">
-          <span>
-            NeighbourLink · <strong>{user.area || 'Your neighbourhood'}</strong>
-          </span>
-          <span>INR (₹) · India Standard Time</span>
-        </div>
-
         {error && <p role="alert">{error}</p>}
         {user.state === 'restricted' && (
           <p role="status">Your account is restricted. You can view existing records.</p>
@@ -1067,7 +1106,7 @@ function App() {
         </button>
         <button
           className="mobile-nav-btn"
-          aria-current={route === 'Bookings' ? 'page' : undefined}
+          aria-current={route === 'Bookings' || route.startsWith('booking/') ? 'page' : undefined}
           onClick={() => go('Bookings')}
         >
           <Icons.Calendar size={20} />

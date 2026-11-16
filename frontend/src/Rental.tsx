@@ -3,6 +3,8 @@ import { api, timeIST } from './api'
 import BlockedDates from './BlockedDates'
 import Reputation from './Reputation'
 import { Icons } from './Icons'
+import { rentalPhoto } from './rentalPhoto'
+import CommunityFaces from './CommunityFaces'
 
 type User = { id: number; name: string }
 type Props = { user: User; openBooking: (id: number) => void }
@@ -257,7 +259,7 @@ function DateForm({
       style={{
         marginTop: '1.2rem',
         padding: '1.2rem',
-        backgroundColor: '#FAFCFA',
+        backgroundColor: 'var(--bg-main)',
         border: '1.5px solid var(--border)',
         borderRadius: 'var(--radius-md)',
         boxShadow: 'var(--shadow-xs)'
@@ -328,7 +330,25 @@ export default function Rental({ user, openBooking }: Props) {
   const [edit, setEdit] = useState<Listing | 'new' | null>(null)
   const [expanded, setExpanded] = useState<number | null>(null)
   const [selectedItemDetails, setSelectedItemDetails] = useState<Listing | null>(null)
-  const [filter, setFilter] = useState('')
+  const [query, setQuery] = useState('')
+  const [area, setArea] = useState('')
+  const [category, setCategory] = useState('')
+  const [sort, setSort] = useState('default')
+  const [savedOnly, setSavedOnly] = useState(false)
+  const savedKey = 'neighbourlink-saved-rentals-' + user.id
+  const [saved, setSaved] = useState<number[]>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(savedKey) || '[]')
+      return Array.isArray(stored) ? stored.filter((id) => Number.isInteger(id)) : []
+    } catch {
+      return []
+    }
+  })
+  const filter = new URLSearchParams({ q: query.trim(), area: area.trim() }).toString()
+
+  useEffect(() => {
+    localStorage.setItem(savedKey, JSON.stringify(saved))
+  }, [saved, savedKey])
   const [revision, refresh] = useState(0)
   const [busy, setBusy] = useState(true)
   const [error, setError] = useState('')
@@ -350,7 +370,8 @@ export default function Rental({ user, openBooking }: Props) {
     let live = true
     setBusy(true)
     setError('')
-    api(mode === 'mine' ? '/rentals/mine' : '/rentals/listings?' + filter)
+    const timer = window.setTimeout(() => {
+      api(mode === 'mine' ? '/rentals/mine' : '/rentals/listings?' + filter)
       .then((rows: Listing[]) => {
         if (live) setItems(rows)
       })
@@ -360,61 +381,43 @@ export default function Rental({ user, openBooking }: Props) {
       .finally(() => {
         if (live) setBusy(false)
       })
+    }, mode === 'discover' ? 220 : 0)
     return () => {
       live = false
+      window.clearTimeout(timer)
     }
   }, [mode, filter, revision])
 
-  function search(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const query = new URLSearchParams()
-    new FormData(e.currentTarget).forEach((v, k) => {
-      if (v) query.set(k, k === 'max_price' ? String(Math.round(Number(v) * 100)) : String(v))
-    })
-    setFilter(query.toString())
-  }
+  const visibleItems = items.filter((item) =>
+    mode === 'mine' || ((!category || item.category === category) && (!savedOnly || saved.includes(item.id)))
+  )
+  if (sort === 'price' && mode === 'discover') visibleItems.sort((a, b) => a.daily_price - b.daily_price)
 
   return (
-    <div>
-      <div className="page-header">
+    <div className="rentals-page">
+      <div className="page-header rentals-heading">
         <div className="page-header-title">
-          <small>PEER-TO-PEER EQUIPMENT</small>
-          <h2>Item rentals</h2>
+          <h1>Rentals {!busy && !error && mode === 'discover' && (
+            <span className="rental-count">{visibleItems.length} {visibleItems.length === 1 ? 'item' : 'items'}</span>
+          )}</h1>
+          <p>Borrow equipment from people near you.</p>
         </div>
+        <div className="rentals-heading-side">
+          <CommunityFaces />
+          <button onClick={() => setEdit('new')}><Icons.Plus size={18} /> List an item</button>
+        </div>
+      </div>
 
-        <div className="page-header-actions">
-          <div className="segmented-tabs">
-            <button
-              className={`segmented-tab ${mode === 'discover' ? 'active' : ''}`}
-              aria-pressed={mode === 'discover'}
-              onClick={() => {
-                setMode('discover')
-                setEdit(null)
-                setExpanded(null)
-              }}
-            >
-              <Icons.Search size={14} />
-              <span>Browse items</span>
-            </button>
-            <button
-              className={`segmented-tab ${mode === 'mine' ? 'active' : ''}`}
-              aria-pressed={mode === 'mine'}
-              onClick={() => {
-                setMode('mine')
-                setEdit(null)
-                setExpanded(null)
-              }}
-            >
-              <Icons.User size={14} />
-              <span>My listings</span>
-            </button>
-          </div>
-
-          <button onClick={() => setEdit('new')}>
-            <Icons.Plus size={16} />
-            <span>List an item</span>
+      <div className="segmented-tabs" aria-label="Rental views" role="group">
+        {(['discover', 'mine'] as const).map((view) => (
+          <button key={view} className="segmented-tab" aria-pressed={mode === view} onClick={() => {
+            setMode(view)
+            setEdit(null)
+            setExpanded(null)
+          }}>
+            {view === 'discover' ? 'Browse items' : 'My listings'}
           </button>
-        </div>
+        ))}
       </div>
 
       {notice && <p role="status">{notice}</p>}
@@ -436,39 +439,34 @@ export default function Rental({ user, openBooking }: Props) {
 
       {/* Filter toolbar in discover mode */}
       {mode === 'discover' && (
-        <form className="filter-toolbar" onSubmit={search}>
-          <label>
-            <span>Search title or description</span>
-            <input name="q" type="search" placeholder="Tent, projector, drill, ladder…" />
+        <div className="rental-filters">
+          <label className="rental-search">
+            <Icons.Search size={18} />
+            <input type="search" aria-label="Search items" placeholder="Tent, projector, drill, ladder…" value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
-
-          <label>
-            <span>Category</span>
-            <select name="category">
-              <option value="">All categories</option>
-              {categories.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
+          <div className="rental-chips" role="group" aria-label="Category">
+            {['', ...categories].map((name) => (
+              <button key={name} type="button" className="rental-chip" aria-pressed={category === name} onClick={() => setCategory(name)}>
+                {name || 'All'}
+              </button>
+            ))}
+          </div>
+          <div className="rental-filter-options">
+            <input aria-label="Filter by area" placeholder="Area" value={area} onChange={(event) => setArea(event.target.value)} />
+            <select aria-label="Sort items" value={sort} onChange={(event) => setSort(event.target.value)}>
+              <option value="default">Default order</option>
+              <option value="price">Lowest price</option>
             </select>
-          </label>
-
-          <label>
-            <span>Area</span>
-            <input name="area" placeholder="e.g. Dadar" />
-          </label>
-
-          <button type="submit" style={{ height: '44px' }}>
-            <Icons.Filter size={16} />
-            <span>Apply filters</span>
-          </button>
-        </form>
+            <button type="button" className="rental-chip" aria-pressed={savedOnly} onClick={() => setSavedOnly(!savedOnly)}>Saved</button>
+          </div>
+        </div>
       )}
 
       {busy ? (
         <p role="status">Loading items…</p>
       ) : error ? (
         <p role="alert">{error}</p>
-      ) : items.length === 0 ? (
+      ) : visibleItems.length === 0 ? (
         <div className="empty-state" style={{ padding: '3.5rem 2rem', textAlign: 'center' }}>
           <div
             style={{
@@ -490,6 +488,14 @@ export default function Rental({ user, openBooking }: Props) {
               ? 'Put your household tools, camping equipment or party gear to use by creating your first listing.'
               : 'Try clearing your filters or searching for another keyword.'}
           </p>
+          {mode === 'discover' && (query || area || category || savedOnly) && (
+            <button onClick={() => {
+              setQuery('')
+              setArea('')
+              setCategory('')
+              setSavedOnly(false)
+            }}>Clear filters</button>
+          )}
           {mode === 'mine' && (
             <button onClick={() => setEdit('new')}>
               <Icons.Plus size={16} />
@@ -498,42 +504,40 @@ export default function Rental({ user, openBooking }: Props) {
           )}
         </div>
       ) : (
-        <div className="listing-grid">
-          {items.map((item) => (
+        <div className={`listing-grid rental-grid ${mode === 'discover' && visibleItems.length === 4 && expanded === null ? 'rental-bento' : ''}`}>
+          {visibleItems.map((item) => (
             <article className="listing-card" key={item.id}>
-              <div
-                className="listing-media"
-                onClick={() => setSelectedItemDetails(item)}
-                style={{ cursor: 'pointer' }}
-              >
+              <div className="rental-card-top">
+                <span className="badge badge-primary">{item.category}</span>
+                {mode === 'discover' && (
+                  <button type="button" className="rental-save" aria-label={`Save ${item.title}`} aria-pressed={saved.includes(item.id)} onClick={() =>
+                    setSaved((ids) => ids.includes(item.id) ? ids.filter((id) => id !== item.id) : [...ids, item.id])
+                  }>
+                    <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <button type="button" className="listing-media rental-media" onClick={() => setSelectedItemDetails(item)} aria-label={`View ${item.title}`}>
                 {item.photos.length > 0 ? (
-                  <img src={'/api/uploads/' + item.photos[0]} alt={item.title} loading="lazy" />
+                  <img src={'/api/uploads/' + item.photos[0]} alt="" loading="lazy" />
                 ) : (
-                  <div className="listing-placeholder">
-                    <Icons.Package size={44} />
+                  <img className="rental-photo" src={rentalPhoto(item.title, item.category)} alt="" loading="lazy" />
+                )}
+              </button>
+              <div className="listing-body">
+                <h3 className="listing-title">{item.title}</h3>
+                <div className="listing-meta rental-meta">
+                  <small><Icons.MapPin size={14} /> {item.area}</small>
+                  <span className="listing-price-badge">{money(item.daily_price)} <small>/ day</small></span>
+                </div>
+                {item.description.startsWith('Fictional demonstration listing.') && (
+                  <div className="rental-neighbour" title="Illustrative profile photo for this demo listing">
+                    <img src={`/community-portraits/neighbour-${((item.id - 1) % 6) + 1}.png`} alt="" loading="lazy" />
+                    <span>Demo neighbour</span>
                   </div>
                 )}
-                <div className="listing-price-badge">
-                  {money(item.daily_price)} / day
-                </div>
-              </div>
-
-              <div className="listing-body">
-                <div className="listing-meta">
-                  <span className="badge badge-primary">{item.category}</span>
-                  <small style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <Icons.MapPin size={12} />
-                    {item.area}
-                  </small>
-                </div>
-
-                <h3
-                  className="listing-title"
-                  onClick={() => setSelectedItemDetails(item)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {item.title}
-                </h3>
                 <p className="listing-description">{item.description}</p>
 
                 <Reputation userId={item.owner_id} kind="rental" />
@@ -548,7 +552,7 @@ export default function Rental({ user, openBooking }: Props) {
                 </div>
 
                 {mode === 'mine' && (
-                  <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #EEF3EF' }}>
+                  <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="badge badge-neutral">Status: {item.status}</span>
                       <button
@@ -924,7 +928,7 @@ export function RentalActions({
             key={entry.id}
             style={{
               padding: '0.85rem 1.15rem',
-              backgroundColor: '#FAFCFA',
+              backgroundColor: 'var(--bg-main)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-md)',
               fontSize: '0.9rem'

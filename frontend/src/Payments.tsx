@@ -117,7 +117,7 @@ export default function Payments({
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '1rem',
-              backgroundColor: '#FAFCFA',
+              backgroundColor: 'var(--bg-main)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-md)',
               padding: '1.2rem',
@@ -198,7 +198,7 @@ export default function Payments({
                 <strong style={{ fontSize: '1.05rem', color: 'var(--primary)' }}>
                   Both parties have accepted the agreement
                 </strong>
-                <p style={{ fontSize: '0.88rem', color: '#27584A', margin: '0.2rem 0 0' }}>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
                   Complete the demo checkout of {money(finance.booking_value)} to confirm this reservation.
                 </p>
               </div>
@@ -221,7 +221,7 @@ export default function Payments({
                 flexWrap: 'wrap',
                 gap: '0.5rem',
                 paddingTop: '0.75rem',
-                borderTop: '1px solid #EEF3EF'
+                borderTop: '1px solid var(--border)'
               }}
             >
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -249,7 +249,7 @@ export default function Payments({
                   key={i}
                   style={{
                     padding: '0.5rem 0.75rem',
-                    backgroundColor: '#FAFCFA',
+                    backgroundColor: 'var(--bg-main)',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-sm)',
                     fontSize: '0.85rem',
