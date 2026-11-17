@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy import (Boolean, CheckConstraint, Column, DateTime, ForeignKey,
-                        Integer, MetaData, String, Table, Text, create_engine, select)
+                        Integer, LargeBinary, MetaData, String, Table, Text, create_engine, select)
 from sqlalchemy.engine import Connection
 
 metadata = MetaData(naming_convention={"ix": "ix_%(table_name)s_%(column_0_name)s",
@@ -45,6 +45,7 @@ uploads = Table("uploads", metadata, Column("id", Integer, primary_key=True),
     Column("public", Boolean, nullable=False), Column("booking_id", Integer, index=True),
     Column("storage_name", String(60), unique=True, nullable=False),
     Column("mime_type", String(40), nullable=False),
+    Column("content", LargeBinary),
     Column("created_at", DateTime(timezone=True), nullable=False, default=now))
 
 account_actions = Table("account_actions", metadata, Column("id", Integer, primary_key=True),

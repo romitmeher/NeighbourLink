@@ -3,7 +3,7 @@ import { api, money, timeIST } from './api'
 import { Icons } from './Icons'
 import { TorphText } from './TorphText'
 import Reputation from './Reputation'
-import { rentalPhoto } from './rentalPhoto'
+import RentalImage from './RentalImage'
 
 interface HomeProps {
   user: any
@@ -459,16 +459,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
                 style={{ cursor: 'pointer' }}
               >
                 <div className="listing-media">
-                  {item.photos?.length > 0 ? (
-                    <img
-                     src={`/api/uploads/${item.photos[0]}`}
-                     alt={item.title}
-                     loading="lazy"
-                     onError={(e) => { e.currentTarget.src = rentalPhoto(item.title, item.category) }}
-                   />
-                  ) : (
-                    <img src={rentalPhoto(item.title, item.category)} alt={item.title} loading="lazy" />
-                  )}
+                  <RentalImage item={item} />
                   <div className="listing-price-badge">
                     {money(item.daily_price)} / day
                   </div>

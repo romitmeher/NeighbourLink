@@ -3,7 +3,7 @@ import { api, timeIST } from './api'
 import BlockedDates from './BlockedDates'
 import Reputation from './Reputation'
 import { Icons } from './Icons'
-import { rentalPhoto } from './rentalPhoto'
+import RentalImage from './RentalImage'
 import CommunityFaces from './CommunityFaces'
 
 type User = { id: number; name: string }
@@ -520,12 +520,7 @@ export default function Rental({ user, openBooking }: Props) {
                 )}
               </div>
               <button type="button" className="listing-media rental-media" onClick={() => setSelectedItemDetails(item)} aria-label={`View ${item.title}`}>
-                <img
-  className="rental-photo"
-  src={rentalPhoto(item.title, item.category)}
-  alt=""
-  loading="lazy"
-/>
+                <RentalImage item={item} />
               </button>
               <div className="listing-body">
                 <h3 className="listing-title">{item.title}</h3>

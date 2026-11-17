@@ -224,6 +224,7 @@ def tasks(conn=Depends(db), user=Depends(me)):
 
 @router.get("/requests/{rid}/photos/{photo_id}")
 def request_photo(rid: int, photo_id: int, conn=Depends(db), user=Depends(me)):
+    from fastapi import Response
     from fastapi.responses import FileResponse
     from backend.auth import upload_dir
     row = request_row(conn, rid)
@@ -233,9 +234,15 @@ def request_photo(rid: int, photo_id: int, conn=Depends(db), user=Depends(me)):
         raise HTTPException(404, "Photo unavailable.")
     photo = conn.execute(select(uploads).where(uploads.c.id == photo_id,
                          uploads.c.owner_id == row["customer_id"])).mappings().first()
-    if not photo or not (upload_dir() / photo["storage_name"]).is_file():
+    if not photo:
         raise HTTPException(404, "Photo unavailable.")
-    return FileResponse(upload_dir() / photo["storage_name"], media_type=photo["mime_type"])
+    headers = {"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"}
+    if photo["content"] is not None:
+        return Response(content=photo["content"], media_type=photo["mime_type"], headers=headers)
+    path = upload_dir() / photo["storage_name"]
+    if path.is_file():
+        return FileResponse(path, media_type=photo["mime_type"], headers=headers)
+    raise HTTPException(404, "Photo unavailable.")
 
 
 def available_request(conn, rid, uid):

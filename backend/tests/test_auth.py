@@ -8,7 +8,7 @@ from PIL import Image
 from sqlalchemy import create_engine, select, update
 
 from backend import auth
-from backend.core import account_actions, db, metadata, users
+from backend.core import account_actions, db, metadata, uploads, users
 from backend.credentials import verify_password
 
 @pytest.fixture()
@@ -158,7 +158,7 @@ def test_restrictions(setup):
         with engine.connect() as conn:
             assert len(conn.execute(select(account_actions)).all()) == 3
 
-def test_persistent_images(setup):
+def test_persistent_images(setup, tmp_path, monkeypatch):
     app, engine = setup
     with TestClient(app) as a, TestClient(app) as other:
         register(a)
@@ -168,6 +168,9 @@ def test_persistent_images(setup):
             req=a.post("/api/uploads",data={"public":str(public).lower()},files={"file":("../../outside.png",buf.getvalue(),"image/png")})
             assert req.status_code == 201, req.text
             url=req.json()["url"]
+            with engine.connect() as conn:
+                assert conn.scalar(select(uploads.c.content).where(uploads.c.id == req.json()["id"]))
+            monkeypatch.setenv("UPLOAD_DIR", str(tmp_path / "different-instance"))
             engine.dispose()
             assert a.get(url).headers["content-type"] == "image/jpeg"
             assert other.get(url).status_code == (200 if public else 404)

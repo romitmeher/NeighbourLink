@@ -3,6 +3,7 @@ import re
 import secrets
 import hmac
 import warnings
+from io import BytesIO
 from datetime import timedelta
 from pathlib import Path
 from typing import Literal
@@ -267,17 +268,12 @@ def upload(file: UploadFile = File(...), public: bool = Form(False), booking_id:
             cleaned.info.clear()
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError, Image.DecompressionBombWarning, ValueError):
         raise HTTPException(422, "Unreadable or oversized image") from None
-    folder = upload_dir()
-    folder.mkdir(parents=True, exist_ok=True)
     storage_name = uuid4().hex + ".jpg"
-    path = folder / storage_name
-    try:
-        cleaned.save(path, "JPEG", quality=88)
-        file_id = conn.scalar(insert(uploads).values(owner_id=user["id"], booking_id=booking_id,
-            public=public, storage_name=storage_name, mime_type="image/jpeg").returning(uploads.c.id))
-    except (OSError, SQLAlchemyError):
-        path.unlink(missing_ok=True)
-        raise
+    image_bytes = BytesIO()
+    cleaned.save(image_bytes, "JPEG", quality=88)
+    file_id = conn.scalar(insert(uploads).values(owner_id=user["id"], booking_id=booking_id,
+        public=public, storage_name=storage_name, mime_type="image/jpeg",
+        content=image_bytes.getvalue()).returning(uploads.c.id))
     return {"id":file_id, "url":f"/api/uploads/{file_id}", "public":public,"booking_id":booking_id}
 
 @router.get("/uploads/{file_id}")
@@ -287,12 +283,14 @@ def read_upload(file_id: int, user: dict | None = Depends(optional_user), conn: 
         user["id"] == file["owner_id"] or user["is_admin"] or
         (file["booking_id"] and booking_participant(conn, file["booking_id"], user["id"]))))):
         raise HTTPException(404, "Image unavailable")
+    headers = {"Cache-Control":"private, no-store" if not file["public"] else "public, max-age=86400",
+               "X-Content-Type-Options":"nosniff"}
+    if file["content"] is not None:
+        return Response(content=file["content"], media_type=file["mime_type"], headers=headers)
     path = upload_dir() / file["storage_name"]
     if not path.is_file():
         raise HTTPException(404, "Image unavailable")
-    return FileResponse(path, media_type=file["mime_type"],
-        headers={"Cache-Control":"private, no-store" if not file["public"] else "public, max-age=86400",
-                 "X-Content-Type-Options":"nosniff"})
+    return FileResponse(path, media_type=file["mime_type"], headers=headers)
 
 @router.get("/admin/users")
 def admin_users(user: dict = Depends(admin), conn: Connection = Depends(db)):

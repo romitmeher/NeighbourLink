@@ -157,7 +157,8 @@ def check_photos(c, photos, user, booking_id=None):
     if booking_id is None:
         from backend.core import require_public_uploads
         return require_public_uploads(c, user["id"], photos)
-    query = sa.select(uploads).where(uploads.c.id.in_(photos), uploads.c.owner_id == user["id"])
+    query = sa.select(uploads.c.id, uploads.c.public, uploads.c.booking_id).where(
+        uploads.c.id.in_(photos), uploads.c.owner_id == user["id"])
     items = list(c.execute(query).mappings())
     if len(items) != len(set(photos)) or any(
         item["public"] or
