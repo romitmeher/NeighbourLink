@@ -29,6 +29,8 @@ users = Table("users", metadata,
     Column("area", String(120), nullable=False, default=""),
     Column("phone", String(30), nullable=False, default=""),
     Column("photo_id", Integer), Column("is_admin", Boolean, nullable=False, default=False),
+    Column("policy_required", Boolean, nullable=False, default=False),
+    Column("policy_version", String(40)), Column("policy_accepted_at", DateTime(timezone=True)),
     Column("state", String(20), nullable=False, default="active"),
     Column("created_at", DateTime(timezone=True), nullable=False, default=now),
     CheckConstraint("state in ('active','restricted','suspended')", name="valid_account_state"))
@@ -86,7 +88,7 @@ def token_hash(token):
     return hmac.new(secret.encode(), token.encode(), hashlib.sha256).hexdigest()
 
 def public_account(row):
-    return {k: row[k] for k in ("id", "name", "area", "phone", "email", "state", "is_admin", "photo_id", "created_at")}
+    return {k: row[k] for k in ("id", "name", "area", "phone", "email", "state", "is_admin", "photo_id", "created_at", "policy_required", "policy_version", "policy_accepted_at")}
 
 def optional_user(request: Request, conn: Connection = Depends(db)):
     check_origin(request)

@@ -31,6 +31,20 @@ def setup(tmp_path, monkeypatch):
 def register(client,email="a@example.test"):
     return client.post("/api/auth/register", json={"email":email,"name":"Test","password":"long test password","area":"Thane"})
 
+def test_policy_acceptance_persists(setup):
+    app, engine = setup
+    with TestClient(app) as client:
+        assert register(client).json()['policy_required'] is True
+        assert client.post('/api/auth/accept-policy', json={'version': 'wrong', 'accept': True}).status_code == 422
+        assert client.post('/api/auth/accept-policy', json={'version': 'draft-2026-11-17', 'accept': False}).status_code == 422
+        result = client.post('/api/auth/accept-policy', json={'version': 'draft-2026-11-17', 'accept': True})
+        assert result.status_code == 200
+        engine.dispose()
+        account = client.get('/api/auth/me').json()
+        assert account['policy_required'] is False
+        assert account['policy_version'] == 'draft-2026-11-17'
+        assert account['policy_accepted_at']
+
 def test_accounts(setup):
     app, engine = setup
     with TestClient(app) as a, TestClient(app) as b:

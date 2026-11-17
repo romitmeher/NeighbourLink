@@ -7,6 +7,7 @@ import Payments from './Payments'
 import Community from './Community'
 import Home from './Home'
 import Landing from './Landing'
+import PolicyAgreement from './PolicyAgreement'
 import { Icons } from './Icons'
 import { rentalPhoto } from './rentalPhoto'
 import CommunityFaces from './CommunityFaces'
@@ -28,6 +29,9 @@ function Brand({ onClick }: { onClick?: () => void }) {
 
 function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => void; onBack: () => void; initialJoin?: boolean }) {
   const [join, setJoin] = useState(initialJoin)
+  const [policyOpen, setPolicyOpen] = useState(false)
+  const [policyRead, setPolicyRead] = useState(false)
+  const [policyChecked, setPolicyChecked] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [otpPhone, setOtpPhone] = useState('')
@@ -37,12 +41,13 @@ function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => voi
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!policyRead || !policyChecked) return
     setBusy(true)
     setError('')
     const values = Object.fromEntries(new FormData(e.currentTarget))
     try {
       await api(join ? '/auth/register' : '/auth/login', 'POST', values)
-      onUser(await api('/auth/me'))
+      onUser(await api('/auth/accept-policy', 'POST', { version: 'draft-2026-11-17', accept: true }))
     } catch (e) {
       setError(String((e as Error).message))
     } finally {
@@ -52,6 +57,7 @@ function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => voi
   }
 
   async function requestOtp() {
+    if (!policyRead || !policyChecked) return
     setError('')
     try {
       const result = await api('/auth/dev-otp/request', 'POST', { phone: otpPhone })
@@ -63,16 +69,20 @@ function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => voi
   }
 
   async function verifyOtp() {
+    if (!policyRead || !policyChecked) return
     setError('')
     try {
-      onUser(await api('/auth/dev-otp/verify', 'POST', { phone: otpPhone, code: otpCode }))
+      await api('/auth/dev-otp/verify', 'POST', { phone: otpPhone, code: otpCode })
+      onUser(await api('/auth/accept-policy', 'POST', { version: 'draft-2026-11-17', accept: true }))
     } catch (e) {
       setError((e as Error).message)
     }
   }
 
   return (
-    <main className="auth-split-view">
+    <>
+    {policyOpen && <PolicyAgreement onRead={() => { setPolicyRead(true); setPolicyOpen(false) }} onBack={() => setPolicyOpen(false)} />}
+    <main className="auth-split-view" style={{ display: policyOpen ? 'none' : undefined }}>
       <section className="auth-hero-pane">
         <div>
           <Brand />
@@ -206,11 +216,13 @@ function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => voi
               {join && <small>Use at least 10 characters for security.</small>}
             </label>
 
+            <label className="policy-check"><input type="checkbox" checked={policyChecked} disabled={!policyRead} onChange={(event) => setPolicyChecked(event.target.checked)} /><span>I agree to the <a href="/privacy-policy.html" onClick={(event) => { event.preventDefault(); setPolicyOpen(true) }}>Terms of Service and Privacy Policy</a>.</span></label>
+            {!policyRead && <small>Read the full policy to enable the checkbox.</small>}
             {error && <p role="alert">{error}</p>}
 
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || !policyChecked || !policyRead}
               className="btn-lg"
               style={{ marginTop: '0.5rem', width: '100%' }}
             >
@@ -225,8 +237,8 @@ function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => voi
             <div className="otp-actions">
               <input value={otpPhone} onChange={e => setOtpPhone(e.target.value)} placeholder="+91 mobile number" inputMode="tel" aria-label="Indian mobile number" />
               {!otpSent
-                ? <button type="button" onClick={requestOtp}>Send code</button>
-                : <button type="button" onClick={verifyOtp}>Verify code</button>}
+                ? <button type="button" disabled={!policyRead || !policyChecked} onClick={requestOtp}>Send code</button>
+                : <button type="button" disabled={!policyRead || !policyChecked} onClick={verifyOtp}>Verify code</button>}
             </div>
             {otpSent && <input value={otpCode} onChange={e => setOtpCode(e.target.value)} placeholder="6-digit code" inputMode="numeric" maxLength={6} aria-label="One-time password" />}
             {otpMessage && <p role="status">{otpMessage}</p>}
@@ -234,6 +246,7 @@ function Auth({ onUser, onBack, initialJoin = false }: { onUser: (u: any) => voi
         </div>
       </section>
     </main>
+    </>
   )
 }
 
@@ -973,10 +986,15 @@ function App() {
           </nav>
           <div className="nav-actions" style={{ gap: '6px' }}><ThemeToggle /><button type="button" className="btn-secondary" onClick={signIn}>Sign in</button><button type="button" onClick={join}>Join NeighbourLink</button></div>
         </div></header>
-        <main className="main-workspace"><Landing user={{ id: 0, name: '', area: 'Mumbai' }} go={join} openBooking={signIn} /></main>
+        <main className="main-workspace"><Landing user={{ id: 0, area: 'Mumbai' }} go={join} /></main>
       </div>
     )
   }
+
+  if (user.policy_required) return <PolicyAgreement requireAgreement onRead={async () => {
+    try { setUser(await api('/auth/accept-policy', 'POST', { version: 'draft-2026-11-17', accept: true })) }
+    catch (e) { setError((e as Error).message) }
+  }} onBack={async () => { await api('/auth/logout', 'POST'); setUser(null) }} />
 
   return (
     <div className="app-shell">

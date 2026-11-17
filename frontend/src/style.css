@@ -1345,6 +1345,26 @@ button.btn-sm { border-radius: 999px; }
 @media(max-width: 600px) { .help-tabs { width: 100%; } .help-tabs button { flex: 1 1 auto; } .help-filter-tail { width: 100%; margin-left: 0; } .help-filter-tail input, .help-filter-tail select { max-width: none; } }
 @media(max-width: 600px) { .help-review-list { grid-template-columns: 1fr; } .help-provider-stats { width: 100%; } }
  /* Home landing page */
+.policy-page { min-height: 100vh; display: grid; place-items: center; padding: 30px 20px; background: var(--bg-main); }
+.policy-card { width: min(760px, 100%); padding: clamp(24px, 4vw, 48px); background: var(--card-bg); border: 1px solid var(--border); border-radius: 32px; }
+.policy-header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 24px; }
+.policy-header > span { font: 800 1.5rem var(--font-heading); letter-spacing: -.05em; }
+.policy-header > span span { color: var(--primary); }
+.policy-header small { font-size: .72rem; font-weight: 800; letter-spacing: .1em; color: var(--primary); }
+.policy-card h1 { font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1; letter-spacing: -.055em; }
+.policy-intro { margin: 16px 0 22px; color: var(--text-muted); }
+.policy-scroll { height: min(42vh, 350px); min-height: 200px; overflow-y: auto; overscroll-behavior: contain; padding: 22px; border: 1px solid var(--border); border-radius: 18px; background: var(--bg-main); }
+.policy-scroll h2 { margin: 28px 0 14px; font-size: 1.4rem; }
+.policy-scroll h3 { margin: 20px 0 6px; font-size: 1rem; }
+.policy-scroll p { font-size: .9rem; line-height: 1.65; color: var(--text-main); }
+.policy-scroll a { color: var(--primary); }
+.policy-scroll .policy-draft, .policy-scroll .policy-end { font-size: .8rem; color: var(--text-muted); }
+.policy-end { margin-top: 24px; font-weight: 700; }
+.policy-hint { margin: 12px 0; font-size: .82rem; color: var(--text-muted); }
+.policy-check { display: flex; align-items: flex-start; gap: 12px; margin: 15px 0 20px; font-size: .9rem; }
+.policy-check input { width: 20px; height: 20px; flex: none; accent-color: var(--primary); }
+.policy-card > button { width: 100%; min-height: 54px; }
+.policy-error { color: var(--error); margin-bottom: 12px; }
 .app-shell, .public-landing-shell { min-width: 0; max-width: 100%; overflow-x: clip; }
 .auth-back-link { display: inline-flex; align-items: center; width: fit-content; margin-bottom: 22px; padding: 8px 0; background: transparent; color: var(--text-muted); font-size: .86rem; }
 .auth-back-link:hover { background: transparent; color: var(--primary); transform: none; }

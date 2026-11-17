@@ -125,7 +125,7 @@ def register(data: Register, request: Request, response: Response, conn: Connect
     rate_limit(request, "register", 5, 60)
     try:
         record = conn.execute(insert(users).values(email=data.email, name=data.name,
-            area=data.area.strip(), phone=data.phone, password_hash=hash_password(data.password)).returning(users)).mappings().one()
+            area=data.area.strip(), phone=data.phone, policy_required=True, password_hash=hash_password(data.password)).returning(users)).mappings().one()
     except IntegrityError:
         raise HTTPException(409, "Email is already registered") from None
     set_session(conn, response, record["id"])
@@ -195,6 +195,16 @@ def logout(request: Request, response: Response, conn: Connection = Depends(db))
 @router.get("/auth/me")
 def current(user: dict = Depends(me)):
     return user
+
+class PolicyAcceptance(FormModel):
+    version: Literal["draft-2026-11-17"]
+    accept: Literal[True]
+
+@router.post("/auth/accept-policy")
+def accept_policy(body: PolicyAcceptance, user: dict = Depends(me), conn: Connection = Depends(db)):
+    account = conn.execute(update(users).where(users.c.id == user["id"]).values(
+        policy_required=False, policy_version=body.version, policy_accepted_at=now()).returning(users)).mappings().one()
+    return public_account(account)
 
 @router.patch("/profile")
 def edit_profile(body: Profile, user: dict = Depends(active), conn: Connection = Depends(db)):
