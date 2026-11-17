@@ -520,11 +520,12 @@ export default function Rental({ user, openBooking }: Props) {
                 )}
               </div>
               <button type="button" className="listing-media rental-media" onClick={() => setSelectedItemDetails(item)} aria-label={`View ${item.title}`}>
-                {item.photos.length > 0 ? (
-                  <img src={'/api/uploads/' + item.photos[0]} alt="" loading="lazy" />
-                ) : (
-                  <img className="rental-photo" src={rentalPhoto(item.title, item.category)} alt="" loading="lazy" />
-                )}
+                <img
+  className="rental-photo"
+  src={rentalPhoto(item.title, item.category)}
+  alt=""
+  loading="lazy"
+/>
               </button>
               <div className="listing-body">
                 <h3 className="listing-title">{item.title}</h3>
