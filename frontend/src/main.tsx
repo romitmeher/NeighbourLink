@@ -971,7 +971,7 @@ function App() {
             <button className="nav-item" onClick={join}>Rentals</button>
             <button className="nav-item" onClick={join}>Local Help</button>
           </nav>
-          <div className="nav-actions"><button type="button" className="btn-secondary" onClick={signIn}>Sign in</button><button type="button" onClick={join}>Join NeighbourLink</button></div>
+          <div className="nav-actions" style={{ gap: '6px' }}><ThemeToggle /><button type="button" className="btn-secondary" onClick={signIn}>Sign in</button><button type="button" onClick={join}>Join NeighbourLink</button></div>
         </div></header>
         <main className="main-workspace"><Landing user={{ id: 0, name: '', area: 'Mumbai' }} go={join} openBooking={signIn} /></main>
       </div>
