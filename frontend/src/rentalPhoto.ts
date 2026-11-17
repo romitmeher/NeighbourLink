@@ -6,17 +6,32 @@ const photos = [
   ['ladder', 'ladder'],
   ['drill', 'drill'],
   ['tent', 'tent'],
-  ['projector', 'projector']
+  ['projector', 'projector'],
+  ['bike', 'bike'],
+  ['motorcycle', 'bike'],
+  ['scooter', 'bike'],
+  ['bus', 'bus']
 ] as const
 
 export function rentalPhoto(title: string, category: string) {
+  console.log('TITLE=', title)
+  console.log('CATEGORY=', category)
+
   const name = title.toLowerCase()
   const match = photos.find(([keyword]) => name.includes(keyword))
-  if (match) return `/rental-photos/${match[1]}.png`
+
+  if (match) {
+    console.log('MATCH=', match[1])
+    return `/rental-photos/${match[1]}.png`
+  }
 
   const group = category.toLowerCase()
-  if (group.includes('camp')) return '/rental-photos/tent.png'
-  if (group.includes('party') || group.includes('projector')) return '/rental-photos/projector.png'
-  if (group.includes('tool')) return '/rental-photos/drill.png'
-  return '/rental-photos/picnic-table.png'
+
+  console.log('GROUP=', group)
+
+  if (group.includes('bike')) return '/rental-photos/bike.png'
+  if (group.includes('vehicle')) return '/rental-photos/bike.png'
+  if (group.includes('bus')) return '/rental-photos/bus.png'
+
+  return '/rental-photos/projector.png'
 }
