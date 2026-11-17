@@ -6,6 +6,8 @@ const demoPortraits: Record<string, string> = {
   'dev mehta': '/help-portraits/dev-mehta.jpg',
   'kavya iyer': '/help-portraits/kavya-iyer.jpg',
   'arjun das': '/help-portraits/arjun-das.jpg',
+  'kabir sen': '/help-portraits/kabir-sen.jpg',
+  'tatya': '/help-portraits/tatya.jpg',
   'neha patel': '/help-portraits/neha-patel.jpg',
   'nia patel': '/help-portraits/neha-patel.jpg'
 }
