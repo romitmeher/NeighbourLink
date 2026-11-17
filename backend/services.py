@@ -72,6 +72,7 @@ class Provider(Form):
     experience: str = Field(max_length=1200)
     qualifications: str = Field(default="", max_length=1200)
     sample_ids: list[int] = Field(default_factory=list, max_length=8)
+    photo_id: int | None = Field(default=None, ge=1)
     area: str = Field(min_length=2, max_length=150)
     availability: str = Field(min_length=2, max_length=500)
     basis: Basis
@@ -134,12 +135,12 @@ def allowed_category(conn, name):
 
 
 def provider(conn, uid):
-    row = conn.execute(select(provider_profiles.c.details, users.c.name)
+    row = conn.execute(select(provider_profiles.c.details, users.c.name, users.c.photo_id)
         .select_from(provider_profiles.join(users, users.c.id == provider_profiles.c.user_id))
         .where(provider_profiles.c.user_id == uid, users.c.state == "active")).mappings().first()
     if not row:
         raise HTTPException(404, "Provider unavailable.")
-    return {"user_id": uid, "name": row["name"], **row["details"]}
+    return {"user_id": uid, "name": row["name"], **row["details"], "photo_id": row["photo_id"]}
 
 
 @router.put("/profile")
@@ -149,18 +150,21 @@ def save_provider(form: Provider, conn=Depends(db), user=Depends(active)):
     for category in form.categories:
         allowed_category(conn, category)
     require_public_uploads(conn, uid, form.sample_ids)
+    if form.photo_id is not None:
+        require_public_uploads(conn, uid, [form.photo_id])
+        conn.execute(users.update().where(users.c.id == uid).values(photo_id=form.photo_id))
     exists = conn.execute(select(provider_profiles.c.user_id).where(provider_profiles.c.user_id == uid)).first()
     statement = (provider_profiles.update().where(provider_profiles.c.user_id == uid) if exists
                  else provider_profiles.insert().values(user_id=uid))
-    conn.execute(statement.values(details=form.model_dump()))
+    conn.execute(statement.values(details=form.model_dump(exclude={"photo_id"})))
     return provider(conn, uid)
 
 
 @router.get("/providers")
 def find_providers(category: str = "", area: str = "", conn=Depends(db)):
-    rows = conn.execute(select(provider_profiles, users.c.name).select_from(provider_profiles.join(users))
+    rows = conn.execute(select(provider_profiles, users.c.name, users.c.photo_id).select_from(provider_profiles.join(users))
                         .where(users.c.state == "active").order_by(provider_profiles.c.user_id)).mappings()
-    return [{"user_id": r["user_id"], "name": r["name"], **r["details"]} for r in rows
+    return [{"user_id": r["user_id"], "name": r["name"], **r["details"], "photo_id": r["photo_id"]} for r in rows
             if (not category or category in r["details"]["categories"])
             and area.casefold() in r["details"]["area"].casefold()]
 

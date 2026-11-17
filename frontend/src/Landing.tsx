@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, money } from './api'
 import { Icons } from './Icons'
 import { rentalPhoto } from './rentalPhoto'
-import { providerPortrait } from './providerPortrait'
+import ProviderImage from './ProviderImage'
 
 type HomeProps = {
   user: { id: number; name: string; area?: string }
@@ -22,6 +22,7 @@ type Listing = {
 type Provider = {
   user_id: number
   name: string
+  photo_id?: number | null
   categories: string[]
   area: string
   rate: number
@@ -143,13 +144,9 @@ export default function Home({ user, go, openBooking }: HomeProps) {
           <button type="button" onClick={() => go('Local Help')}>Meet local helpers <Icons.ArrowRight size={18} /></button>
         </div>
         <div className="landing-help-people">
-          {providers.length ? providers.map((person, index) => (
+          {providers.length ? providers.map((person) => (
             <button type="button" className="landing-person" key={person.user_id} onClick={() => go('Local Help')}>
-              {providerPortrait(person.name) ? (
-                <img className="landing-person-avatar" src={providerPortrait(person.name)!} alt="" loading="lazy" />
-              ) : (
-                <span className="landing-person-avatar" style={{ background: ['#e3dbff', '#ffeeb0', '#ffd8c6'][index % 3] }}>{person.name[0]}</span>
-              )}
+              <ProviderImage name={person.name} photoId={person.photo_id} variant="landing" />
               <span><strong>{person.name}</strong><small>{person.categories.slice(0, 2).join(' · ')}</small></span>
               <span className="landing-person-rate">{money(person.rate)} <small>/ {person.basis}</small></span>
             </button>

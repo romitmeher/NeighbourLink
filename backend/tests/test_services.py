@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy import create_engine, select
 from backend import services as s, bookings as b, community as c
-from backend.core import metadata, users
+from backend.core import metadata, uploads, users
 
 
 @pytest.fixture
@@ -25,6 +25,20 @@ def market():
 def task(conn,customer,target=None):
     return s.post_request(s.Task(title='Pack books',description='Pack three shelves',category='Packing',area='Dadar',
         preferred_schedule='Tomorrow',materials='Customer supplies boxes',target_provider_id=target),conn,customer)['id']
+
+
+def test_helper_profile_photo_is_owned_and_visible(market):
+    conn, people = market
+    helper, other = people[1:]
+    photo_id = conn.scalar(uploads.insert().values(owner_id=helper['id'], public=True,
+        storage_name='helper.jpg', mime_type='image/jpeg').returning(uploads.c.id))
+    form = s.Provider(adult_declared=True, bio='Packing and organising', categories=['Packing'],
+        offerings=['everyday'], experience='Three years', area='Dadar', availability='Weekends',
+        basis='hourly', rate=30000, photo_id=photo_id)
+    assert s.save_provider(form, conn, helper)['photo_id'] == photo_id
+    assert next(p for p in s.find_providers(conn=conn) if p['user_id'] == helper['id'])['photo_id'] == photo_id
+    with pytest.raises(HTTPException):
+        s.save_provider(form, conn, other)
 
 
 def offer(basis='fixed',offset=1):

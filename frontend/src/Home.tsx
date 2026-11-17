@@ -464,9 +464,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
                      src={`/api/uploads/${item.photos[0]}`}
                      alt={item.title}
                      loading="lazy"
-                     onError={(e) => {
-                       e.currentTarget.src = rentalPhoto(item.title, item.category)
-                     }}
+                     onError={(e) => { e.currentTarget.src = rentalPhoto(item.title, item.category) }}
                    />
                   ) : (
                     <img src={rentalPhoto(item.title, item.category)} alt={item.title} loading="lazy" />
@@ -586,7 +584,7 @@ export default function Home({ user, go, openBooking }: HomeProps) {
       {/* How NeighbourLink Works */}
       <section
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--card-bg)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-xl)',
           padding: 'clamp(2rem, 4vw, 3.2rem)',

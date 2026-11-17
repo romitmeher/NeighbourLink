@@ -3,11 +3,12 @@ import { api, money, timeIST } from './api'
 import { RequestMessages } from './Community'
 import Reputation from './Reputation'
 import { Icons } from './Icons'
-import { providerPortrait } from './providerPortrait'
+import ProviderImage from './ProviderImage'
 
 type Item = Record<string, any>
 type User = { id: number }
 type HelpProps = { user: User; openBooking: (id: number) => void }
+type ServicesProps = HelpProps & { onUser: (user: any) => void }
 type FieldProps = {
   name: string
   label: string
@@ -189,6 +190,14 @@ function ProviderForm({
         label="Save provider profile"
         icon={<Icons.Check size={16} />}
         onSave={async (data) => {
+          const portrait = data.get('portrait')
+          let photoId = profile?.photo_id || null
+          if (portrait instanceof File && portrait.size > 0) {
+            const upload = new FormData()
+            upload.set('file', portrait)
+            upload.set('public', 'true')
+            photoId = (await api('/uploads', 'POST', upload)).id
+          }
           const uploaded = await photos(data, true)
           await api('/help/profile', 'PUT', {
             adult_declared: data.has('adult'),
@@ -201,6 +210,7 @@ function ProviderForm({
             area: val(data, 'area'),
             basis: val(data, 'basis'),
             rate: paise(data, 'rate'),
+            photo_id: photoId,
             sample_ids: uploaded.length ? uploaded : profile?.sample_ids || []
           })
           await done()
@@ -291,6 +301,12 @@ function ProviderForm({
             step=".01"
             value={profile?.rate ? profile.rate / 100 : 400}
           />
+        </div>
+
+        <div className="provider-photo-field">
+          <ProviderImage name={profile?.name || 'Your profile'} photoId={profile?.photo_id} variant="modal" />
+          <label><span>Your profile photo</span><input type="file" name="portrait" accept="image/jpeg,image/png,image/webp" />
+            <small>Shown on your Local Help listing. JPEG, PNG or WebP, up to 5 MB.</small></label>
         </div>
 
         <Images label="Work samples (public photos)" />
@@ -919,7 +935,7 @@ export function ServiceActions({
   )
 }
 
-export default function Services({ user, openBooking }: HelpProps) {
+export default function Services({ user, openBooking, onUser }: ServicesProps) {
   const [tab, setTab] = useState('Providers')
   const [providers, setProviders] = useState<Item[]>([])
   const [requests, setRequests] = useState<Item[]>([])
@@ -1037,12 +1053,7 @@ export default function Services({ user, openBooking }: HelpProps) {
               <article className="help-provider" key={provider.user_id}>
                 <div className="help-provider-side" style={{ backgroundColor: ['#e3dbff', '#ffeeb0', '#ffd8c6', '#cde6ff'][index % 4] }}>
                   <div className="help-provider-chips"><span>Local provider</span><span>Service profile</span></div>
-                  {providerPortrait(provider.name) ? (
-                    <img className="help-provider-portrait" src={providerPortrait(provider.name)!}
-                      alt={`Illustrative portrait of ${provider.name}`} loading="lazy" />
-                  ) : (
-                    <div className="help-provider-initial" aria-hidden="true">{provider.name?.[0]?.toUpperCase() || 'P'}</div>
-                  )}
+                  <ProviderImage name={provider.name} photoId={provider.photo_id} variant="card" />
                   <div className="help-provider-stats">
                     <div><strong>{provider.categories.length}</strong><span>{provider.categories.length === 1 ? 'service category' : 'service categories'}</span></div>
                     <div><strong>{provider.availability?.split(' ')[0] || 'Ask'}</strong><span>availability</span></div>
@@ -1085,14 +1096,7 @@ export default function Services({ user, openBooking }: HelpProps) {
           <div className="modal-content">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                {providerPortrait(selectedProvider.name) ? (
-                  <img className="help-modal-portrait" src={providerPortrait(selectedProvider.name)!}
-                    alt={`Illustrative portrait of ${selectedProvider.name}`} />
-                ) : (
-                  <div className="help-modal-portrait help-modal-initial" aria-hidden="true">
-                    {selectedProvider.name?.[0]?.toUpperCase() || 'P'}
-                  </div>
-                )}
+                <ProviderImage name={selectedProvider.name} photoId={selectedProvider.photo_id} variant="modal" />
                 <div>
                   <h2 style={{ fontSize: '1.5rem', marginBottom: '0.2rem' }}>{selectedProvider.name}</h2>
                   <small style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -1267,6 +1271,7 @@ export default function Services({ user, openBooking }: HelpProps) {
           done={async () => {
             setTab('Providers')
             await refresh()
+            onUser(await api('/auth/me'))
           }}
         />
       )}

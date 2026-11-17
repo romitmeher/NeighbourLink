@@ -1083,7 +1083,7 @@ function App() {
         ) : route === 'Home' ? (
           <Home user={user} go={go} openBooking={openBooking} />
         ) : route === 'Local Help' ? (
-          <Services user={user} openBooking={openBooking} />
+          <Services user={user} openBooking={openBooking} onUser={setUser} />
         ) : route === 'Bookings' ? (
           <BookingList open={openBooking} />
         ) : route === 'Dashboard' ? (
