@@ -13,21 +13,16 @@ const photos = [
   ['bus', 'bus']
 ] as const
 
-export function rentalPhoto(title: string, category: string) {
-  console.log('TITLE=', title)
-  console.log('CATEGORY=', category)
-
+export function matchingRentalPhoto(title: string): string | null {
   const name = title.toLowerCase()
   const match = photos.find(([keyword]) => name.includes(keyword))
+  return match ? `/rental-photos/${match[1]}.png` : null
+}
 
-  if (match) {
-    console.log('MATCH=', match[1])
-    return `/rental-photos/${match[1]}.png`
-  }
-
+export function rentalPhoto(title: string, category: string) {
+  const match = matchingRentalPhoto(title)
+  if (match) return match
   const group = category.toLowerCase()
-
-  console.log('GROUP=', group)
 
   if (group.includes('bike')) return '/rental-photos/bike.png'
   if (group.includes('vehicle')) return '/rental-photos/bike.png'

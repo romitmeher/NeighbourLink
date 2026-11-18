@@ -1244,6 +1244,9 @@ button.btn-sm { border-radius: 999px; }
 .rental-media img { max-height: 210px; object-fit: contain; }
 .rental-media img.rental-art { width: 72%; height: 100%; }
 .rental-media img.rental-photo { width: 100%; height: 100%; max-height: none; object-fit: cover; border-radius: 20px; }
+.rental-example-photo { position: relative; display: block; width: 100%; height: 100%; min-height: 175px; }
+.rental-example-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+.rental-example-label { position: absolute; right: 10px; bottom: 10px; padding: 5px 9px; border-radius: 999px; background: rgba(255,255,255,.94); color: #17141f; font-size: .72rem; font-weight: 700; }
 .rental-photo-placeholder { width: 100%; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border-radius: 20px; background: rgba(255,255,255,.5); color: #4d465d; font-size: .9rem; font-weight: 600; }
 .rental-grid .listing-body { padding: 0 16px 16px; color: #17141f; flex: none; }
 .rental-grid .listing-title { font-size: clamp(1.35rem, 2vw, 1.8rem); color: #17141f; letter-spacing: -.04em; line-height: 1.1; }
