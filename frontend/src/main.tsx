@@ -7,6 +7,7 @@ import Payments from './Payments'
 import Community from './Community'
 import Home from './Home'
 import Landing from './Landing'
+import LocationDemo from './LocationDemo'
 import PolicyAgreement from './PolicyAgreement'
 import { Icons } from './Icons'
 import { rentalPhoto } from './rentalPhoto'
@@ -1047,7 +1048,7 @@ function App() {
           </nav>
 
           <div className="nav-actions">
-            <span className="location-pill"><Icons.MapPin size={16} />{user.area || 'Your neighbourhood'}</span>
+            <LocationDemo key={user.id} userId={user.id} area={user.area} />
             <ThemeToggle />
             <button
               className="user-profile-menu"

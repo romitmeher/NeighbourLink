@@ -1374,6 +1374,17 @@ button.btn-sm { border-radius: 999px; }
 .listing-terms-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 20px; }
 .listing-terms-header h2 { font-size: 1.2rem; }
 .listing-terms-document iframe { flex: 1; width: 100%; min-height: 0; border: 0; background: #fff; }
+.listing-terms-content { flex: 1; min-height: 0; overflow-y: auto; padding: 24px; color: var(--text-main); }
+.listing-terms-content h2 { margin: 24px 0 14px; font-size: 1.5rem; }
+.listing-terms-content h3 { margin: 20px 0 8px; font-size: 1.05rem; }
+.listing-terms-content p { line-height: 1.65; margin-bottom: 12px; }
+.location-demo-dialog { width: min(500px, 100%); }
+.location-demo-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.location-demo-heading h2 { font-size: 1.6rem; }
+.location-demo-dialog > p { color: var(--text-muted); margin: 16px 0 24px; }
+.location-demo-dialog form { display: grid; gap: 18px; }
+.location-demo-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.location-demo-options button { font-size: .8rem; }
 .policy-check a { color: var(--primary); text-decoration: underline; }
 .app-shell, .public-landing-shell { min-width: 0; max-width: 100%; overflow-x: clip; }
 .auth-back-link { display: inline-flex; align-items: center; width: fit-content; margin-bottom: 22px; padding: 8px 0; background: transparent; color: var(--text-muted); font-size: .86rem; }

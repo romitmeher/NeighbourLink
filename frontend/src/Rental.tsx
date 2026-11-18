@@ -4,6 +4,7 @@ import BlockedDates from './BlockedDates'
 import Reputation from './Reputation'
 import { Icons } from './Icons'
 import RentalImage from './RentalImage'
+import PolicyText from './PolicyText'
 import CommunityFaces from './CommunityFaces'
 
 type User = { id: number; name: string }
@@ -230,7 +231,7 @@ function Editor({
         {termsOpen && <div className="listing-terms-overlay" role="dialog" aria-modal="true" aria-label="Terms and Conditions" onKeyDown={(event) => { if (event.key === 'Escape') setTermsOpen(false) }}>
           <div className="listing-terms-document">
             <div className="listing-terms-header"><h2>Terms and Conditions</h2><button type="button" autoFocus className="btn-secondary" onClick={() => setTermsOpen(false)}>Back to listing</button></div>
-            <iframe title="NeighbourLink Terms and Conditions" src="/privacy-policy.html" />
+            <div className="listing-terms-content" tabIndex={0}><PolicyText /></div>
           </div>
         </div>}
       </div>
