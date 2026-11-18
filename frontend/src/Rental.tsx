@@ -87,9 +87,15 @@ function Editor({
 }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [termsOpen, setTermsOpen] = useState(false)
 
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (!termsAccepted) {
+      setError('Please read and agree to the Terms and Conditions before saving.')
+      return
+    }
     const body = new FormData(e.currentTarget)
     setError('')
     setBusy(true)
@@ -204,18 +210,29 @@ function Editor({
             </select>
           </label>
 
+          <label className="policy-check">
+            <input type="checkbox" required checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} />
+            <span>I’ve read and agree to the <a href="/privacy-policy.html" onClick={(event) => { event.preventDefault(); setTermsOpen(true) }}>Terms and Conditions</a>.</span>
+          </label>
+
           {error && <p role="alert">{error}</p>}
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
             <button type="button" className="btn-secondary" onClick={cancel}>
               Cancel
             </button>
-            <button disabled={busy} className="btn-lg">
+            <button disabled={busy || !termsAccepted} className="btn-lg">
               <Icons.Check size={16} />
               <span>{busy ? 'Saving…' : 'Save listing'}</span>
             </button>
           </div>
         </form>
+        {termsOpen && <div className="listing-terms-overlay" role="dialog" aria-modal="true" aria-label="Terms and Conditions" onKeyDown={(event) => { if (event.key === 'Escape') setTermsOpen(false) }}>
+          <div className="listing-terms-document">
+            <div className="listing-terms-header"><h2>Terms and Conditions</h2><button type="button" autoFocus className="btn-secondary" onClick={() => setTermsOpen(false)}>Back to listing</button></div>
+            <iframe title="NeighbourLink Terms and Conditions" src="/privacy-policy.html" />
+          </div>
+        </div>}
       </div>
     </div>
   )

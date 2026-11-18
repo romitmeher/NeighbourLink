@@ -1369,6 +1369,12 @@ button.btn-sm { border-radius: 999px; }
 .policy-check input { width: 20px; height: 20px; flex: none; accent-color: var(--primary); }
 .policy-card > button { width: 100%; min-height: 54px; }
 .policy-error { color: var(--error); margin-bottom: 12px; }
+.listing-terms-overlay { position: fixed; inset: 0; z-index: 110; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.65); }
+.listing-terms-document { width: min(850px,100%); height: min(85vh,850px); display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; background: var(--card-bg); border: 1px solid var(--border); }
+.listing-terms-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 20px; }
+.listing-terms-header h2 { font-size: 1.2rem; }
+.listing-terms-document iframe { flex: 1; width: 100%; min-height: 0; border: 0; background: #fff; }
+.policy-check a { color: var(--primary); text-decoration: underline; }
 .app-shell, .public-landing-shell { min-width: 0; max-width: 100%; overflow-x: clip; }
 .auth-back-link { display: inline-flex; align-items: center; width: fit-content; margin-bottom: 22px; padding: 8px 0; background: transparent; color: var(--text-muted); font-size: .86rem; }
 .auth-back-link:hover { background: transparent; color: var(--primary); transform: none; }
